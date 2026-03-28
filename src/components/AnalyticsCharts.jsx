@@ -135,119 +135,113 @@ const AnalyticsCharts = ({ data }) => {
   const currentSeason = new Date().toLocaleDateString('en-US', { month: 'long' });
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 p-6">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 p-3 sm:p-4 lg:p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2 flex items-center gap-3">
-            <BarChart3 className="w-8 h-8 text-blue-600" />
-            Analytics Dashboard
-          </h1>
-          <p className="text-slate-600 text-lg">Comprehensive weather forecast analysis for {currentSeason}</p>
-        </div>
-
         {/* Summary Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-blue-100 rounded-xl">
-                <MapPin className="w-6 h-6 text-blue-600" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="p-2 sm:p-3 bg-blue-100 rounded-lg sm:rounded-xl">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-blue-600" />
               </div>
               <div className="text-right">
-                <p className="text-sm text-slate-600 font-medium">Total Regions</p>
-                <p className="text-2xl font-bold text-slate-900">{totalRegions}</p>
+                <p className="text-xs sm:text-sm text-slate-600 font-medium">Total Regions</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">{totalRegions}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-orange-100 rounded-xl">
-                <Thermometer className="w-6 h-6 text-orange-600" />
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="p-2 sm:p-3 bg-orange-100 rounded-lg sm:rounded-xl">
+                <Thermometer className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-orange-600" />
               </div>
               <div className="text-right">
-                <p className="text-sm text-slate-600 font-medium">Avg Temperature</p>
-                <p className="text-2xl font-bold text-slate-900">{avgTempOverall}°C</p>
+                <p className="text-xs sm:text-sm text-slate-600 font-medium">Avg Temperature</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">{avgTempOverall}°C</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-red-100 rounded-xl">
-                <AlertTriangle className="w-6 h-6 text-red-600" />
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="p-2 sm:p-3 bg-red-100 rounded-lg sm:rounded-xl">
+                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-red-600" />
               </div>
               <div className="text-right">
-                <p className="text-sm text-slate-600 font-medium">High Risk Areas</p>
-                <p className="text-2xl font-bold text-slate-900">{highRiskRegions}</p>
+                <p className="text-xs sm:text-sm text-slate-600 font-medium">High Risk Areas</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">{highRiskRegions}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-green-100 rounded-xl">
-                <Activity className="w-6 h-6 text-green-600" />
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <div className="p-2 sm:p-3 bg-green-100 rounded-lg sm:rounded-xl">
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600" />
               </div>
               <div className="text-right">
-                <p className="text-sm text-slate-600 font-medium">Data Points</p>
-                <p className="text-2xl font-bold text-slate-900">{data.length}</p>
+                <p className="text-xs sm:text-sm text-slate-600 font-medium">Data Points</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">{data.length}</p>
               </div>
             </div>
           </div>
         </div>
 
         {/* Charts Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Temperature by Region Chart */}
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <TrendingUp className="w-5 h-5 text-orange-600" />
-                  Top 10 Regions by Temperature
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                  <span className="truncate">Top 10 Regions by Temperature</span>
                 </h3>
-                <p className="text-sm text-slate-600 mt-1">Highest average temperatures across regions</p>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1 hidden sm:block">Highest average temperatures across regions</p>
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={regionChartData} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={regionChartData} margin={{ top: 10, right: 10, left: 10, bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
                 <XAxis 
                   dataKey="region" 
                   angle={-45}
                   textAnchor="end"
-                  height={80}
-                  tick={{ fontSize: 11, fill: '#64748b' }}
+                  height={60}
+                  tick={{ fontSize: 9, fill: '#64748b' }}
                   tickLine={{ stroke: '#cbd5e1' }}
                 />
-                <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickLine={{ stroke: '#cbd5e1' }} />
+                <YAxis tick={{ fontSize: 10, fill: '#64748b' }} tickLine={{ stroke: '#cbd5e1' }} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="avgTemp" fill="#f97316" name="Avg Temperature" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="avgTemp" fill="#f97316" name="Avg Temperature" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
 
           {/* Temperature Distribution Pie Chart */}
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <PieChartIcon className="w-5 h-5 text-blue-600" />
-                  Temperature Distribution
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <PieChartIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                  <span className="truncate">Temperature Distribution</span>
                 </h3>
-                <p className="text-sm text-slate-600 mt-1">Breakdown of temperature ranges across all regions</p>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1 hidden sm:block">Breakdown of temperature ranges across all regions</p>
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={320}>
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={tempRanges.filter(r => r.count > 0)}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ range, count, percent }) => `${range}: ${count} (${(percent * 100).toFixed(0)}%)`}
-                  outerRadius={100}
+                  label={({ range, count, percent }) => {
+                    const displayName = range.length > 15 ? range.split('°')[0] + '°' : range;
+                    return `${displayName}: ${count} (${(percent * 100).toFixed(0)}%)`;
+                  }}
+                  outerRadius={80}
                   fill="#8884d8"
                   dataKey="count"
                   animationBegin={0}
@@ -263,25 +257,28 @@ const AnalyticsCharts = ({ data }) => {
           </div>
 
           {/* Heatwave Risk Distribution */}
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <AlertTriangle className="w-5 h-5 text-red-600" />
-                  Heatwave Risk Distribution
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                  <span className="truncate">Heatwave Risk Distribution</span>
                 </h3>
-                <p className="text-sm text-slate-600 mt-1">Risk levels across all monitored regions</p>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1 hidden sm:block">Risk levels across all monitored regions</p>
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={320}>
+            <ResponsiveContainer width="100%" height={250}>
               <PieChart>
                 <Pie
                   data={heatwaveRiskData.filter(r => r.count > 0)}
                   cx="50%"
                   cy="50%"
                   labelLine={false}
-                  label={({ risk, count, percent }) => `${risk.split('(')[0].trim()}: ${count} (${(percent * 100).toFixed(0)}%)`}
-                  outerRadius={100}
+                  label={({ risk, count, percent }) => {
+                    const displayName = risk.split('(')[0].trim();
+                    return `${displayName}: ${count} (${(percent * 100).toFixed(0)}%)`;
+                  }}
+                  outerRadius={80}
                   fill="#8884d8"
                   dataKey="count"
                   animationBegin={200}
@@ -297,38 +294,38 @@ const AnalyticsCharts = ({ data }) => {
           </div>
 
           {/* Heatwave Risk by Region */}
-          <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 hover:shadow-xl transition-shadow duration-300">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
               <div>
-                <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <TrendingDown className="w-5 h-5 text-red-600" />
-                  Top 10 Regions by Heatwave Risk
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
+                  <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                  <span className="truncate">Top 10 Regions by Heatwave Risk</span>
                 </h3>
-                <p className="text-sm text-slate-600 mt-1">Regions with highest heatwave probability</p>
+                <p className="text-xs sm:text-sm text-slate-600 mt-1 hidden sm:block">Regions with highest heatwave probability</p>
               </div>
             </div>
-            <ResponsiveContainer width="100%" height={320}>
-              <BarChart data={regionChartData.sort((a, b) => b.avgHeatwaveProb - a.avgHeatwaveProb).slice(0, 10)} margin={{ top: 20, right: 30, left: 20, bottom: 60 }}>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={regionChartData.sort((a, b) => b.avgHeatwaveProb - a.avgHeatwaveProb).slice(0, 10)} margin={{ top: 10, right: 10, left: 10, bottom: 60 }}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
                 <XAxis 
                   dataKey="region" 
                   angle={-45}
                   textAnchor="end"
-                  height={80}
-                  tick={{ fontSize: 11, fill: '#64748b' }}
+                  height={60}
+                  tick={{ fontSize: 9, fill: '#64748b' }}
                   tickLine={{ stroke: '#cbd5e1' }}
                 />
-                <YAxis tick={{ fontSize: 12, fill: '#64748b' }} tickLine={{ stroke: '#cbd5e1' }} />
+                <YAxis tick={{ fontSize: 10, fill: '#64748b' }} tickLine={{ stroke: '#cbd5e1' }} />
                 <Tooltip content={<CustomTooltip />} />
-                <Bar dataKey="avgHeatwaveProb" fill="#ef4444" name="Avg Heatwave Prob" radius={[8, 8, 0, 0]} />
+                <Bar dataKey="avgHeatwaveProb" fill="#ef4444" name="Avg Heatwave Prob" radius={[6, 6, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="mt-8 text-center text-sm text-slate-600">
-          <p>Last updated: {new Date().toLocaleString()} | Data points: {data.length} regions</p>
+        <div className="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-slate-600 px-2">
+          <p className="break-words">Last updated: {new Date().toLocaleString()} | Data points: {data.length} regions</p>
         </div>
       </div>
     </div>

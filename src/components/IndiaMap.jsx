@@ -662,63 +662,61 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
         onClose={() => setDetailsModalVisible(false)}
       />
 
-      <div
-        className={`absolute bottom-4 left-4 bg-white p-4 rounded-2xl shadow-lg border border-slate-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}
-      >
+      {/* Temperature Scale - Hidden on mobile */}
+      <div className={`hidden sm:block absolute bottom-14 left-4 bg-white p-3 sm:p-4 rounded-2xl shadow-lg border border-slate-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}>
         <div className="flex items-center gap-2 mb-3">
-          <Thermometer className="w-4 h-4 text-orange-600" />
-          <h4 className="font-semibold text-sm text-slate-900">Temperature Scale</h4>
+          <Thermometer className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
+          <h4 className="font-semibold text-xs sm:text-sm text-slate-900">Temperature Scale</h4>
         </div>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+        <div className="space-y-1 sm:space-y-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-blue-500"></div>
             <span className="text-xs text-slate-600">Min: {Math.round(tempRange.min)}°C</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-linear-to-r from-blue-500 via-green-500 to-red-500"></div>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-linear-to-r from-blue-500 via-green-500 to-red-500"></div>
             <span className="text-xs text-slate-600">Gradient Scale</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-red-700"></div>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-700"></div>
             <span className="text-xs text-slate-600">Max: {Math.round(tempRange.max)}°C</span>
           </div>
         </div>
       </div>
 
-      <div
-        className={`absolute bottom-4 right-4 bg-white p-4 rounded-2xl shadow-lg border border-slate-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}
-      >
+      {/* Heatwave Risk - Hidden on mobile */}
+      <div className={`hidden sm:block absolute bottom-14 right-4 bg-white p-3 sm:p-4 rounded-2xl shadow-lg border border-slate-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}>
         <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle className="w-4 h-4 text-red-600" />
-          <h4 className="font-semibold text-sm text-slate-900">Heatwave Risk</h4>
+          <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
+          <h4 className="font-semibold text-xs sm:text-sm text-slate-900">Heatwave Risk</h4>
         </div>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+        <div className="space-y-1 sm:space-y-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-slate-400"></div>
             <span className="text-xs text-slate-600">Low (0-20%)</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-slate-400"></div>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-slate-400"></div>
             <span className="text-xs text-slate-600">Medium (20-40%)</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-slate-400"></div>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-2.5 h-2.5 sm:w-4 sm:h-4 rounded-full bg-slate-400"></div>
             <span className="text-xs text-slate-600">High (40-60%)</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-slate-400"></div>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-3 h-3 sm:w-5 sm:h-5 rounded-full bg-slate-400"></div>
             <span className="text-xs text-slate-600">Very High (60-80%)</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-slate-400"></div>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-3.5 h-3.5 sm:w-6 sm:h-6 rounded-full bg-slate-400"></div>
             <span className="text-xs text-slate-600">Extreme (80-100%)</span>
           </div>
         </div>
       </div>
 
-      {/* Timeline Slider */}
-      <div className="absolute bottom-2 left-4 right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-2 z-1000 shadow-lg">
-        <div className="flex items-center gap-3">
+      {/* Timeline Slider - Adjusted for mobile */}
+      <div className="absolute bottom-2 left-2 right-2 sm:left-4 sm:right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-2 sm:p-3 z-1000 shadow-lg">
+        <div className="flex items-center gap-2 sm:gap-3">
           <span className="text-xs font-medium text-gray-600 whitespace-nowrap">
             Day {selectedLeadDay}/{maxLeadDay}
           </span>
@@ -728,7 +726,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
             max={maxLeadDay}
             value={selectedLeadDay}
             onChange={(e) => setSelectedLeadDay(parseInt(e.target.value))}
-            className="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+            className="flex-1 h-1 sm:h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
           />
         </div>
       </div>

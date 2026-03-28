@@ -1,6 +1,6 @@
 import { formatTemperature, formatProbability } from "../utils/formatters";
 
-const SidebarKPI = ({ data }) => {
+const SidebarKPI = ({ data, mobile = false }) => {
   // If we get here, show data even if it's empty/invalid
   const safeData = Array.isArray(data) ? data : [];
   const displayData =
@@ -61,18 +61,20 @@ const SidebarKPI = ({ data }) => {
   ];
 
   return (
-    <div className="w-48 lg:w-56 bg-white border-r border-gray-200 p-4 h-full hidden lg:block">
-      <h2 className="text-lg font-bold text-gray-900 mb-4">Forecast Summary</h2>
-      <div className="space-y-4">
+    <div className={`${mobile ? 'w-full' : 'w-48 lg:w-56'} bg-white border-r border-gray-200 p-3 lg:p-4 h-full ${mobile ? '' : 'hidden lg:block'}`}>
+      <h2 className={`font-bold text-gray-900 mb-3 lg:mb-4 ${mobile ? 'text-sm' : 'text-lg'}`}>
+        {mobile ? 'Summary' : 'Forecast Summary'}
+      </h2>
+      <div className={`space-y-2 lg:space-y-4 ${mobile ? 'grid grid-cols-2 gap-2' : ''}`}>
         {kpis.map((kpi, index) => (
           <div
             key={index}
-            className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:bg-gray-100 transition-colors"
+            className="bg-gray-50 rounded-lg p-2 lg:p-3 border border-gray-200 hover:bg-gray-100 transition-colors"
           >
-            <div className="text-sm font-medium text-gray-600 mb-1">
+            <div className={`text-xs lg:text-sm font-medium text-gray-600 mb-1`}>
               {kpi.title}
             </div>
-            <div className={`text-xl font-bold ${kpi.color}`}>{kpi.value}</div>
+            <div className={`text-lg lg:text-xl font-bold ${kpi.color}`}>{kpi.value}</div>
           </div>
         ))}
       </div>
