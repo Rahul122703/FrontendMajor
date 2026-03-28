@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapPin, User, Info, X } from "lucide-react";
+import { MapPin, User, Info, X, AlertTriangle } from "lucide-react";
 
 const LocationNotification = ({ userLocation, nearestLocation, distance, isVisible, onClose, onShowDetails }) => {
   if (!isVisible || !userLocation || !nearestLocation) return null;
