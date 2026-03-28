@@ -2,10 +2,39 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapPin, User, Info, X, AlertTriangle, Thermometer, Calendar, Activity } from "lucide-react";
+import { MapPin, User, Info, X, AlertTriangle, Thermometer, Calendar, Activity, Maximize2, Minimize2 } from "lucide-react";
+
+// Fix for default marker icons
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png",
+  iconUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png",
+  shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png",
+});
+
+// Temperature color function
+const getTemperatureColorFunction = (normalizedTemp) => {
+  if (normalizedTemp < 0.2) {
+    return "#1e40af"; // Deep blue
+  } else if (normalizedTemp < 0.4) {
+    return "#06b6d4"; // Cyan
+  } else if (normalizedTemp < 0.6) {
+    return "#10b981"; // Green
+  } else if (normalizedTemp < 0.8) {
+    return "#f59e0b"; // Orange
+  } else {
+    return "#dc2626"; // Red
+  }
+};
 
 const LocationNotification = ({ userLocation, nearestLocation, distance, isVisible, onClose, onShowDetails }) => {
   if (!isVisible || !userLocation || !nearestLocation) return null;
+
+  const [isCelsius, setIsCelsius] = useState(true);
+
+  const handleTemperatureToggle = () => {
+    setIsCelsius(!isCelsius);
+  };
 
   return (
     <div className="absolute top-4 left-4 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-1000 max-w-sm backdrop-blur-sm bg-opacity-95">
@@ -278,7 +307,6 @@ const HoverCard = ({ point, position, isVisible }) => {
 };
 
 const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
-  const navigate = useNavigate();
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
@@ -293,6 +321,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
   const [tempRange, setTempRange] = useState({ min: 0, max: 0 });
   const [selectedLeadDay, setSelectedLeadDay] = useState(1);
   const [maxLeadDay, setMaxLeadDay] = useState(1);
+  const [showTemperatures, setShowTemperatures] = useState(false);
 
   // Calculate distance between two coordinates (Haversine formula)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -334,7 +363,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
     // Find maximum lead day
     const leadDays = data.map(point => point.lead).filter(lead => lead !== null && lead !== undefined);
     const maxDay = Math.max(...leadDays);
-    setMaxLeadDay(maxDay);
+    setTimeout(() => setMaxLeadDay(maxDay), 0);
     
     setLocationLoading(true);
     
@@ -415,70 +444,96 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
     const filteredData = data.filter(point => {
       if (point.lead === selectedLeadDay) return true;
       // If exact day doesn't exist, show the latest available day before selected day
-      if (point.lead < selectedLeadDay) {
-        const hasExactDay = data.some(p => p.lead === selectedLeadDay);
-        if (!hasExactDay) return true;
-      }
-      return false;
-    });
+      return point.lead < selectedLeadDay;
+    }).sort((a, b) => b.lead - a.lead)[0] ? data.filter(point => {
+      if (point.lead === selectedLeadDay) return true;
+      const latestAvailable = data.filter(p => p.lead < selectedLeadDay).sort((a, b) => b.lead - a.lead)[0];
+      return latestAvailable && point.lead === latestAvailable.lead;
+    }) : data.filter(point => point.lead === selectedLeadDay);
 
-    // Find min and max temperatures for normalization
+    if (filteredData.length === 0) return;
+
+    // Calculate temperature range for normalization
     const temps = filteredData.map(point => point.tmax_pred).filter(temp => temp !== null && temp !== undefined);
     const minTemp = Math.min(...temps);
     const maxTemp = Math.max(...temps);
-    const tempRangeValue = maxTemp - minTemp || 1; // Avoid division by zero
     
     // Update state for display in UI
-    setTempRange({ min: minTemp, max: maxTemp });
+    setTimeout(() => setTempRange({ min: minTemp, max: maxTemp }), 0);
 
-    const getTemperatureColor = (temp) => {
-      if (temp === null || temp === undefined) return "#94a3b8";
-      
-      // Normalize temperature to 0-1 range based on current day's data
-      const normalizedTemp = (temp - minTemp) / tempRangeValue;
-      
-      // Use more aggressive color transitions for better visibility
-      if (normalizedTemp < 0.2) {
-        // Deep blue to cyan (0-20%)
-        const intensity = normalizedTemp / 0.2;
-        return `rgb(${Math.round(0 + intensity * 0)}, ${Math.round(50 + intensity * 150)}, ${Math.round(200 + intensity * 55)})`;
-      } else if (normalizedTemp < 0.4) {
-        // Cyan to yellow (20-40%)
-        const intensity = (normalizedTemp - 0.2) / 0.2;
-        return `rgb(${Math.round(0 + intensity * 255)}, ${Math.round(200 + intensity * 55)}, ${Math.round(255 - intensity * 155)})`;
-      } else if (normalizedTemp < 0.6) {
-        // Yellow to orange (40-60%)
-        const intensity = (normalizedTemp - 0.4) / 0.2;
-        return `rgb(${Math.round(255)}, ${Math.round(255 - intensity * 100)}, ${Math.round(100 - intensity * 100)})`;
-      } else if (normalizedTemp < 0.8) {
-        // Orange to red (60-80%)
-        const intensity = (normalizedTemp - 0.6) / 0.2;
-        return `rgb(${Math.round(255)}, ${Math.round(155 - intensity * 155)}, ${Math.round(0)})`;
-      } else {
-        // Red to dark red (80-100%)
-        const intensity = (normalizedTemp - 0.8) / 0.2;
-        return `rgb(${Math.round(255 - intensity * 100)}, ${Math.round(0)}, ${Math.round(0)})`;
-      }
-    };
+    if (showTemperatures) {
+      // Show temperature labels instead of circles
+      filteredData.forEach((point) => {
+        const temp = point.tmax_pred;
+        
+        if (temp !== null && temp !== undefined) {
+          const tempIcon = L.divIcon({
+            html: `<div class="text-xs font-bold text-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${Math.round(temp)}°</div>`,
+            className: "temperature-marker cursor-pointer",
+            iconSize: [20, 14],
+            iconAnchor: [10, -7]
+          });
+          
+          const tempMarker = L.marker([point.lat, point.lon], { icon: tempIcon });
+          
+          // Create popup content for temperature marker
+          const popupContent = `
+            <div class="p-2 min-w-48">
+              <h3 class="font-bold text-lg mb-2">${point.region_name || "Unknown Region"}</h3>
+              <div class="space-y-1 text-sm">
+                <div><strong>Coordinates:</strong> ${point.lat.toFixed(2)}, ${point.lon.toFixed(2)}</div>
+                <div><strong>Issue Date:</strong> ${new Date(point.issue_date).toLocaleDateString()}</div>
+                <div><strong>Forecast Date:</strong> ${new Date(point.forecast_date).toLocaleDateString()}</div>
+                <div><strong>Lead Day:</strong> ${point.lead}</div>
+                <div><strong>Predicted Temp:</strong> ${Math.round(temp)}°C</div>
+                <div><strong>Heatwave Prob:</strong> ${point.hw_prob !== null ? Math.round(point.hw_prob * 100) + "%" : "N/A"}</div>
+                <div><strong>Heatwave Class:</strong> ${point.hw_pred || "None"}</div>
+              </div>
+            </div>
+          `;
+          
+          tempMarker.bindPopup(popupContent);
+          
+          // Add hover events
+          tempMarker.on('mouseover', function(e) {
+            setHoveredPoint(point);
+            const point_xy = mapInstanceRef.current.latLngToContainerPoint(e.target.getLatLng());
+            setHoverPosition({ x: point_xy.x, y: point_xy.y });
+          });
 
+          tempMarker.on('mouseout', function() {
+            setHoveredPoint(null);
+          });
 
-    filteredData.forEach((point) => {
-      const temp = point.tmax_pred;
-      const hwProb = point.hw_prob;
-
-      const color = getTemperatureColor(temp);
-
-      const circle = L.circleMarker([point.lat, point.lon], {
-        radius: 4 + hwProb * 6, // Smaller base radius: 4-10 instead of 8-20
-        fillColor: color,
-        color: "#ffffff",
-        weight: 1.5,
-        opacity: 0.9,
-        fillOpacity: 0.7,
-        className: "forecast-point cursor-pointer transition-all duration-200",
+          tempMarker.on('click', () => {
+            onPointClick && onPointClick(point);
+          });
+          
+          tempMarker.addTo(mapInstanceRef.current);
+          markersRef.current.push(tempMarker);
+        }
       });
+    } else {
+      // Show circles (normal mode)
+      filteredData.forEach((point) => {
+        const temp = point.tmax_pred;
+        const hwProb = point.hw_prob || 0;
+        
+        // Normalize temperature for color calculation
+        const normalizedTemp = maxTemp !== minTemp ? (temp - minTemp) / (maxTemp - minTemp) : 0.5;
+        const color = getTemperatureColorFunction(normalizedTemp);
 
-      const popupContent = `
+        const circle = L.circleMarker([point.lat, point.lon], {
+          radius: 4 + hwProb * 6, // Smaller base radius: 4-10 instead of 8-20
+          fillColor: color,
+          color: "#ffffff",
+          weight: 1.5,
+          opacity: 0.9,
+          fillOpacity: 0.7,
+          className: "forecast-point cursor-pointer transition-all duration-200",
+        });
+
+        const popupContent = `
         <div class="p-2 min-w-50">
           <h3 class="font-bold text-lg mb-2">${point.region_name || "Unknown Region"}</h3>
           <div class="space-y-1 text-sm">
@@ -489,86 +544,43 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
             <div><strong>Predicted Temp:</strong> ${temp !== null ? Math.round(temp) + "°C" : "N/A"}</div>
             <div><strong>Heatwave Prob:</strong> ${hwProb !== null ? Math.round(hwProb * 100) + "%" : "N/A"}</div>
             <div><strong>Heatwave Class:</strong> ${point.hw_pred || "None"}</div>
-            <div class="mt-2">
-              <button class="bg-blue-500 text-white px-3 py-1 rounded text-xs hover:bg-blue-600 transition-colors" onclick="window.open('/forecast/${point.lat}/${point.lon}', '_blank')">
-                View 7-Day Forecast →
-              </button>
-            </div>
           </div>
         </div>
       `;
 
-      circle._pointData = point;
-      circle.bindPopup(popupContent);
+        circle.bindPopup(popupContent);
 
-      circle.on("click", (e) => {
-        L.DomEvent.stopPropagation(e);
-        if (onPointClick) {
-          onPointClick(point);
-        }
-        navigate(`/forecast/${point.lat}/${point.lon}`);
+        circle.on("mouseover", function (e) {
+          const point = filteredData.find(p => 
+            Math.abs(p.lat - e.target.getLatLng().lat) < 0.01 && 
+            Math.abs(p.lon - e.target.getLatLng().lon) < 0.01
+          );
+          if (point) {
+            setHoveredPoint(point);
+            const point_xy = mapInstanceRef.current.latLngToContainerPoint(e.target.getLatLng());
+            setHoverPosition({ x: point_xy.x, y: point_xy.y });
+          }
+        });
+
+        circle.on("mouseout", function () {
+          setHoveredPoint(null);
+        });
+
+        circle.on("click", () => {
+          onPointClick && onPointClick(point);
+        });
+
+        circle.addTo(mapInstanceRef.current);
+        markersRef.current.push(circle);
       });
+    }
 
-      circle.on("mouseover", (e) => {
-        const point = e.target;
-        const latlng = e.latlng;
-        const containerPoint =
-          mapInstanceRef.current.latLngToContainerPoint(latlng);
-
-        setHoveredPoint(point._pointData);
-        setHoverPosition({
-          x: containerPoint.x,
-          y: containerPoint.y,
-        });
-
-        point.setStyle({
-          weight: 2.5,
-          fillOpacity: 0.9,
-          color: "#ffffff",
-        });
-      });
-
-      circle.on("mouseout", function () {
-        setHoveredPoint(null);
-        this.setStyle({
-          weight: 1.5,
-          fillOpacity: 0.7,
-          color: "#ffffff",
-        });
-      });
-
-      circle.addTo(mapInstanceRef.current);
-      markersRef.current.push(circle);
-    });
-
-      // Add user location marker if available
-      if (userLocation && mapInstanceRef.current) {
-        const userIcon = L.divIcon({
-          html: `<div class="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-full border-2 border-white shadow-lg">
-                  <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
-                  </svg>
-                </div>`,
-          className: "user-location-marker",
-          iconSize: [32, 32],
-          iconAnchor: [16, 16]
-        });
-        
-        L.marker([userLocation.lat, userLocation.lon], { icon: userIcon })
-          .addTo(mapInstanceRef.current)
-          .bindPopup("Your Location")
-          .on('click', () => {
-            setDetailsModalVisible(true);
-          });
-      }
-
-      if (data && data.length > 0 && !userLocation) {
-        const bounds = L.latLngBounds(
-          data.map((point) => [point.lat, point.lon]),
-        );
-        mapInstanceRef.current.fitBounds(bounds, { padding: [20, 20] });
-      }
-  }, [data, onPointClick, navigate, userLocation, selectedLeadDay]);
+    // Fit map to data bounds
+    if (filteredData.length > 0) {
+      const bounds = L.latLngBounds(filteredData.map(point => [point.lat, point.lon]));
+      mapInstanceRef.current.fitBounds(bounds, { padding: [20, 20] });
+    }
+  }, [data, selectedLeadDay, showTemperatures, onPointClick]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedPoint) return;
@@ -593,6 +605,17 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       className={`relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-lg ${isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""}`}
     >
       <div ref={mapRef} className="w-full min-h-[calc(100vh-120px)]" />
+      {/* Temperature Toggle Button */}
+      <button
+        onClick={() => setShowTemperatures(!showTemperatures)}
+        className="absolute top-4 left-4 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-1000 hover:bg-slate-50 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
+        title={showTemperatures ? "Show Circles" : "Show Temperatures"}
+      >
+        <Thermometer className={`w-4 h-4 ${showTemperatures ? 'text-blue-600' : 'text-gray-600'}`} />
+        <span className="text-xs font-medium">{showTemperatures ? 'Temp' : 'Circles'}</span>
+      </button>
+
+      {/* Fullscreen Button */}
       <button
         onClick={toggleFullscreen}
         className="absolute top-4 right-4 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-1000 hover:bg-slate-50 transition-all duration-200 hover:shadow-xl"
