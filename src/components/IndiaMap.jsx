@@ -807,15 +807,127 @@ const IndiaMap = ({ data, selectedPoint, onPointClick, onNavigateToCoordinates, 
     }
   }, [userLocation, onUserLocationUpdate]);
 
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
+  const toggleFullscreen = async () => {
+    const mapElement = mapRef.current;
+    
+    if (!document.fullscreenElement) {
+      try {
+        if (mapElement.requestFullscreen) {
+          await mapElement.requestFullscreen();
+        } else if (mapElement.webkitRequestFullscreen) {
+          await mapElement.webkitRequestFullscreen();
+        } else if (mapElement.msRequestFullscreen) {
+          await mapElement.msRequestFullscreen();
+        }
+        setIsFullscreen(true);
+        // Force map to resize after entering fullscreen
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        }, 200);
+      } catch (error) {
+        console.error('Error attempting to enable fullscreen:', error);
+        // Fallback to CSS-only fullscreen on parent
+        const mapContainer = mapElement.parentElement;
+        if (mapContainer) {
+          setIsFullscreen(true);
+          setTimeout(() => {
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.invalidateSize();
+            }
+          }, 200);
+        }
+      }
+    } else {
+      try {
+        if (document.exitFullscreen) {
+          await document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          await document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          await document.msExitFullscreen();
+        }
+        setIsFullscreen(false);
+        // Force map to resize after exiting fullscreen
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        }, 200);
+      } catch (error) {
+        console.error('Error attempting to exit fullscreen:', error);
+        // Fallback to CSS-only fullscreen
+        setIsFullscreen(false);
+        setTimeout(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        }, 200);
+      }
+    }
   };
+
+  // Handle fullscreen change events and keyboard shortcuts
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      // Force map to resize when fullscreen state changes
+      setTimeout(() => {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+          // Also try to force a redraw
+          mapInstanceRef.current.eachLayer((layer) => {
+            if (layer.redraw) {
+              layer.redraw();
+            }
+          });
+        }
+      }, 300);
+    };
+
+    const handleKeyDown = (event) => {
+      // ESC key exits fullscreen
+      if (event.key === 'Escape' && document.fullscreenElement) {
+        toggleFullscreen();
+      }
+      // 'F' key toggles fullscreen when map is focused
+      if ((event.key === 'f' || event.key === 'F') && event.ctrlKey) {
+        event.preventDefault();
+        toggleFullscreen();
+      }
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
 
   return (
     <div
-      className={`relative bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 overflow-hidden shadow-lg ${isFullscreen ? "fixed inset-0 z-40 rounded-none" : ""}`}
+      className={`relative bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 overflow-hidden shadow-lg ${
+        isFullscreen ? "fixed inset-0 z-40 rounded-none bg-black" : ""
+      }`}
     >
-      <div ref={mapRef} className="w-full min-h-[calc(100vh-120px)]" />
+      <div 
+        ref={mapRef} 
+        className={`w-full ${
+          isFullscreen 
+            ? "h-screen" 
+            : "min-h-[calc(100vh-120px)]"
+        }`} 
+        style={{
+          backgroundColor: isFullscreen ? 'black' : 'transparent'
+        }}
+      />
       
       {/* Temperature Toggle Button */}
       <button
@@ -843,7 +955,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick, onNavigateToCoordinates, 
       <button
         onClick={toggleFullscreen}
         className="absolute top-4 right-4 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 z-[1000] hover:bg-slate-50 dark:hover:bg-gray-700 transition-all duration-200 hover:shadow-xl"
-        title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+        title={isFullscreen ? "Exit Fullscreen (ESC)" : "Enter Fullscreen (Ctrl+F)"}
       >
         <svg
           className="w-5 h-5"
@@ -863,7 +975,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick, onNavigateToCoordinates, 
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"
+              d="M4 8V4m0 0h4M4 4l5.5 5.5M20 8v4m0-4h-4m4 0l-5.5-5.5M4 16v4m0 0h4m-4 0l5.5 5.5M20 16v4m0 0h-4m4 0l-5.5-5.5"
             />
           )}
         </svg>
