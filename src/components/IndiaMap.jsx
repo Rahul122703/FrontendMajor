@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapPin, User, Info, X, AlertTriangle } from "lucide-react";
+import { MapPin, User, Info, X, AlertTriangle, Thermometer, Calendar, Activity } from "lucide-react";
 
 const LocationNotification = ({ userLocation, nearestLocation, distance, isVisible, onClose, onShowDetails }) => {
   if (!isVisible || !userLocation || !nearestLocation) return null;
@@ -290,6 +290,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
   const [locationNotificationVisible, setLocationNotificationVisible] = useState(false);
   const [locationLoading, setLocationLoading] = useState(true);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+  const [tempRange, setTempRange] = useState({ min: 0, max: 0 });
 
   // Calculate distance between two coordinates (Haversine formula)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -624,33 +625,24 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       />
 
       <div
-        className={`absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-lg border border-gray-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}
+        className={`absolute bottom-4 left-4 bg-white p-4 rounded-2xl shadow-lg border border-slate-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}
       >
-        <h4 className="font-semibold text-sm mb-2">Temperature Scale</h4>
-        <div className="space-y-1">
+        <div className="flex items-center gap-2 mb-3">
+          <Thermometer className="w-4 h-4 text-orange-600" />
+          <h4 className="font-semibold text-sm text-slate-900">Temperature Scale</h4>
+        </div>
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-            <span className="text-xs">&lt; 20°C</span>
+            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+            <span className="text-xs text-slate-600">Min: {Math.round(tempRange.min)}°C</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-green-500"></div>
-            <span className="text-xs">20-25°C</span>
+            <div className="w-3 h-3 rounded-full bg-linear-to-r from-blue-500 via-green-500 to-red-500"></div>
+            <span className="text-xs text-slate-600">Gradient Scale</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-amber-500"></div>
-            <span className="text-xs">25-30°C</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-orange-500"></div>
-            <span className="text-xs">30-35°C</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-red-500"></div>
-            <span className="text-xs">35-40°C</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-red-700"></div>
-            <span className="text-xs">&gt; 40°C</span>
+            <div className="w-3 h-3 rounded-full bg-red-700"></div>
+            <span className="text-xs text-slate-600">Max: {Math.round(tempRange.max)}°C</span>
           </div>
         </div>
       </div>
