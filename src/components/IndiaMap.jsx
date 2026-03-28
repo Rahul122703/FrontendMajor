@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
-import "leaflet/dist/leaflet.css";
 import { MapPin, User, Info, X, AlertTriangle, Thermometer, Calendar, Activity, Maximize2, Minimize2, Play, Pause } from "lucide-react";
+
+// Import Leaflet CSS dynamically to avoid Vite resolution issues
+const importLeafletCSS = () => {
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  document.head.appendChild(link);
+};
 
 // Fix for default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -338,7 +345,7 @@ const HoverCard = ({ point, position, isVisible }) => {
   );
 };
 
-const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
+const IndiaMap = ({ data, selectedPoint, onPointClick, onNavigateToCoordinates, onShowLocationData, onUserLocationUpdate }) => {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
   const markersRef = useRef([]);
@@ -349,6 +356,11 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
   const [nearestLocation, setNearestLocation] = useState(null);
   const [locationNotificationVisible, setLocationNotificationVisible] = useState(false);
   const [locationLoading, setLocationLoading] = useState(true);
+
+  // Import Leaflet CSS on component mount
+  useEffect(() => {
+    importLeafletCSS();
+  }, []);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [tempRange, setTempRange] = useState({ min: 0, max: 0 });
   const [selectedLeadDay, setSelectedLeadDay] = useState(1);
@@ -765,20 +777,50 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
     }, 100);
   }, [isFullscreen]);
 
+  // Add coordinate navigation from AI responses
+  useEffect(() => {
+    if (!mapInstanceRef.current || !onNavigateToCoordinates || !onShowLocationData) return;
+    
+    // This will be called when AI provides coordinates
+    window.handleAINavigation = (lat, lng) => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setView([lat, lng], 10);
+        
+        // Find nearest data point
+        const nearest = findNearestLocation(lat, lng, data);
+        if (nearest) {
+          onPointClick && onPointClick(nearest);
+          onShowLocationData(lat, lng);
+        }
+      }
+    };
+    
+    return () => {
+      window.handleAINavigation = null;
+    };
+  }, [mapInstanceRef, onNavigateToCoordinates, onShowLocationData, data, onPointClick, findNearestLocation]);
+
+  // Update user location when parent requests
+  useEffect(() => {
+    if (onUserLocationUpdate && userLocation) {
+      onUserLocationUpdate(userLocation);
+    }
+  }, [userLocation, onUserLocationUpdate]);
+
   const toggleFullscreen = () => {
     setIsFullscreen(!isFullscreen);
   };
 
   return (
     <div
-      className={`relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-lg ${isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""}`}
+      className={`relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-lg ${isFullscreen ? "fixed inset-0 z-40 rounded-none" : ""}`}
     >
       <div ref={mapRef} className="w-full min-h-[calc(100vh-120px)]" />
       
       {/* Temperature Toggle Button */}
       <button
         onClick={() => setShowTemperatures(!showTemperatures)}
-        className="absolute top-4 left-4 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-1000 hover:bg-slate-50 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
+        className="absolute top-4 left-4 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-[1000] hover:bg-slate-50 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
         title={showTemperatures ? "Show Circles" : "Show Temperatures"}
       >
         <Thermometer className={`w-4 h-4 ${showTemperatures ? 'text-blue-600' : 'text-gray-600'}`} />
@@ -788,7 +830,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       {/* Animation Control */}
       <button
         onClick={() => setIsAnimating(!isAnimating)}
-        className={`absolute top-4 right-20 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-1000 hover:bg-slate-50 transition-all duration-200 hover:shadow-xl flex items-center gap-2 ${
+        className={`absolute top-4 right-20 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-[1000] hover:bg-slate-50 transition-all duration-200 hover:shadow-xl flex items-center gap-2 ${
           isAnimating ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
         }`}
         title={isAnimating ? "Stop Animation" : "Start Animation"}
@@ -800,7 +842,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       {/* Fullscreen Button */}
       <button
         onClick={toggleFullscreen}
-        className="absolute top-4 right-4 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-1000 hover:bg-slate-50 transition-all duration-200 hover:shadow-xl"
+        className="absolute top-4 right-4 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-[1000] hover:bg-slate-50 transition-all duration-200 hover:shadow-xl"
         title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
       >
         <svg
@@ -829,7 +871,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
 
       {/* Location loading indicator */}
       {locationLoading && (
-        <div className="absolute top-4 left-4 bg-white rounded-xl shadow-lg border border-slate-200 p-3 z-1000">
+        <div className="absolute top-4 left-38 bg-white rounded-xl shadow-lg border border-slate-200 p-3 z-[1200]">
           <div className="flex items-center gap-2">
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
             <span className="text-sm text-slate-600">Getting your location...</span>
@@ -874,7 +916,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
               );
             }
           }}
-          className="absolute top-4 left-38 bg-blue-600 text-white p-3 rounded-xl shadow-lg border border-slate-200 z-1000 hover:bg-blue-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
+          className="absolute top-4 left-38 bg-blue-600 text-white p-3 rounded-xl shadow-lg border border-slate-200 z-[1200] hover:bg-blue-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
           title="Find my current location"
         >
           <User className="w-4 h-4" />
@@ -897,24 +939,38 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       {nearestLocation && !locationNotificationVisible && (
         <button
           onClick={() => setDetailsModalVisible(true)}
-          className="absolute bottom-20 left-4 bg-blue-600 text-white rounded-xl shadow-lg border border-slate-200 p-3 z-1000 hover:bg-blue-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
+          className="absolute bottom-20 left-4 bg-blue-600 text-white rounded-xl shadow-lg border border-slate-200 p-3 z-[1200] hover:bg-blue-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
           title="View nearest location details"
         >
           <Info className="w-4 h-4" />
-          <span className="text-sm font-medium">Nearest Location</span>
+          <span className="text-sm font-medium">Details</span>
         </button>
       )}
 
-      {/* Details Modal */}
-      <NearestLocationModal
-        nearestLocation={nearestLocation}
-        distance={nearestLocation?.distance || 0}
-        isVisible={detailsModalVisible}
-        onClose={() => setDetailsModalVisible(false)}
-      />
+      {/* Hover Info */}
+      {hoveredPoint && (
+        <div
+          className="absolute bg-white rounded-lg shadow-lg border border-slate-200 p-3 z-[1300] pointer-events-none"
+          style={{
+            left: `${hoverPosition.x}px`,
+            top: `${hoverPosition.y}px`,
+            transform: 'translate(-50%, -100%)'
+          }}
+        >
+          <div className="text-sm">
+            <div className="font-semibold text-slate-900">{hoveredPoint.region_name}</div>
+            <div className="text-slate-600">
+              Temp: {hoveredPoint.tmax_pred !== null ? Math.round(hoveredPoint.tmax_pred) + "°C" : "N/A"}
+            </div>
+            <div className="text-slate-600">
+              Risk: {hoveredPoint.hw_prob !== null ? Math.round(hoveredPoint.hw_prob * 100) + "%" : "N/A"}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Temperature Scale - Hidden on mobile */}
-      <div className={`hidden sm:block absolute bottom-14 left-4 bg-white p-3 sm:p-4 rounded-2xl shadow-lg border border-slate-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}>
+      <div className={`hidden sm:block absolute bottom-14 left-4 bg-white p-3 sm:p-4 rounded-2xl shadow-lg border border-slate-200 z-[1300] ${isFullscreen ? "scale-110" : ""}`}>
         <div className="flex items-center gap-2 mb-3">
           <Thermometer className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
           <h4 className="font-semibold text-xs sm:text-sm text-slate-900">Temperature Scale</h4>

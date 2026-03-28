@@ -8,6 +8,7 @@ import DetailPanel from './components/DetailPanel';
 import AnalyticsCharts from './components/AnalyticsCharts';
 import DataTable from './components/DataTable';
 import ForecastDetailPage from './components/ForecastDetailPage';
+import AIChatAssistant from './components/AIChatAssistant';
 import { fetchForecastData } from './services/api';
 
 function Dashboard() {
@@ -17,6 +18,9 @@ function Dashboard() {
   const [selectedPoint, setSelectedPoint] = useState(null);
   const [lastUpdated, setLastUpdated] = useState(null);
   const [activeView, setActiveView] = useState('map');
+  const [userLocation, setUserLocation] = useState(null);
+  const [isAIChatVisible, setIsAIChatVisible] = useState(false);
+  const [isAIChatMinimized, setIsAIChatMinimized] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -41,6 +45,20 @@ function Dashboard() {
 
   const handlePointClick = (point) => {
     setSelectedPoint(point);
+  };
+
+  const handleNavigateToCoordinates = (lat, lng) => {
+    // This will be passed to IndiaMap to navigate to specific coordinates
+    console.log('Navigating to coordinates:', lat, lng);
+  };
+
+  const handleShowLocationData = (lat, lng) => {
+    // This will find and show data for specific coordinates
+    console.log('Showing data for coordinates:', lat, lng);
+  };
+
+  const handleGetUserLocation = (location) => {
+    setUserLocation(location);
   };
 
   const handleRowClick = (point) => {
@@ -81,7 +99,12 @@ function Dashboard() {
 
   return (
     <div className="bg-gray-50 flex flex-col h-screen min-h-screen">
-      <Header data={forecastData} lastUpdated={lastUpdated} />
+      <Header 
+        data={forecastData} 
+        lastUpdated={lastUpdated}
+        onToggleChat={() => setIsAIChatVisible(!isAIChatVisible)}
+        isChatVisible={isAIChatVisible}
+      />
 
       <div className="flex flex-1 overflow-hidden flex-col lg:flex-row">
         {/* Sidebar KPI - Hidden on mobile, visible on larger screens */}
@@ -150,6 +173,9 @@ function Dashboard() {
                   data={forecastData} 
                   selectedPoint={selectedPoint}
                   onPointClick={handlePointClick}
+                  onNavigateToCoordinates={handleNavigateToCoordinates}
+                  onShowLocationData={handleShowLocationData}
+                  onUserLocationUpdate={handleGetUserLocation}
                 />
               </div>
             )}
@@ -213,6 +239,18 @@ function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* AI Chat Assistant */}
+      <AIChatAssistant
+        data={forecastData}
+        userLocation={userLocation}
+        onNavigateToCoordinates={handleNavigateToCoordinates}
+        onShowLocationData={handleShowLocationData}
+        isVisible={isAIChatVisible}
+        onClose={() => setIsAIChatVisible(false)}
+        isMinimized={isAIChatMinimized}
+        onToggleMinimize={() => setIsAIChatMinimized(!isAIChatMinimized)}
+      />
     </div>
   );
 }

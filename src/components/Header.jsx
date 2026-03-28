@@ -1,7 +1,7 @@
-import { Thermometer, Cloud, Calendar, MapPin } from 'lucide-react';
+import { Thermometer, Cloud, Calendar, MapPin, Bot, X } from 'lucide-react';
 import { getCurrentSeason } from '../services/api';
 
-const Header = ({ data, lastUpdated }) => {
+const Header = ({ data, lastUpdated, onToggleChat, isChatVisible }) => {
   const currentSeason = getCurrentSeason();
   
   const getSeasonBadgeColor = (season) => {
@@ -49,6 +49,30 @@ const Header = ({ data, lastUpdated }) => {
               <span className="xs:hidden">Updated</span>
             </div>
           )}
+          
+          {/* AI Chat Button */}
+          <button
+            onClick={onToggleChat}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 ${
+              isChatVisible 
+                ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg' 
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+            }`}
+          >
+            {isChatVisible ? (
+              <>
+                <X className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Close AI</span>
+                <span className="sm:hidden">Close</span>
+              </>
+            ) : (
+              <>
+                <Bot className="w-3 h-3 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">AI Assistant</span>
+                <span className="sm:hidden">AI</span>
+              </>
+            )}
+          </button>
         </div>
       </div>
     </header>
