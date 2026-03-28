@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { MapPin, User, Info, X, AlertTriangle, Thermometer, Calendar, Activity, Maximize2, Minimize2 } from "lucide-react";
+import { MapPin, User, Info, X, AlertTriangle, Thermometer, Calendar, Activity, Maximize2, Minimize2, Play, Pause } from "lucide-react";
 
 // Fix for default marker icons
 delete L.Icon.Default.prototype._getIconUrl;
@@ -321,6 +321,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
   const [selectedLeadDay, setSelectedLeadDay] = useState(1);
   const [maxLeadDay, setMaxLeadDay] = useState(1);
   const [showTemperatures, setShowTemperatures] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
 
   // Calculate distance between two coordinates (Haversine formula)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -409,6 +410,17 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       }
     }
   }, [data, findNearestLocation, maxLeadDay]);
+
+  // Animation effect
+  useEffect(() => {
+    if (!isAnimating) return;
+
+    const interval = setInterval(() => {
+      setSelectedLeadDay(prev => (prev % (maxLeadDay || 1)) + 1);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [isAnimating, maxLeadDay]);
 
   useEffect(() => {
     if (!mapInstanceRef.current && mapRef.current) {
@@ -604,6 +616,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       className={`relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-lg ${isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""}`}
     >
       <div ref={mapRef} className="w-full min-h-[calc(100vh-120px)]" />
+      
       {/* Temperature Toggle Button */}
       <button
         onClick={() => setShowTemperatures(!showTemperatures)}
@@ -612,6 +625,18 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       >
         <Thermometer className={`w-4 h-4 ${showTemperatures ? 'text-blue-600' : 'text-gray-600'}`} />
         <span className="text-xs font-medium">{showTemperatures ? 'Temp' : 'Circles'}</span>
+      </button>
+
+      {/* Animation Control */}
+      <button
+        onClick={() => setIsAnimating(!isAnimating)}
+        className={`absolute top-4 right-20 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-1000 hover:bg-slate-50 transition-all duration-200 hover:shadow-xl flex items-center gap-2 ${
+          isAnimating ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+        }`}
+        title={isAnimating ? "Stop Animation" : "Start Animation"}
+      >
+        {isAnimating ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+        <span className="text-xs font-medium">{isAnimating ? 'Stop' : 'Animate'}</span>
       </button>
 
       {/* Fullscreen Button */}
