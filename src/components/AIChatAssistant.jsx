@@ -228,15 +228,15 @@ const AIChatAssistant = ({
               isUser 
                 ? 'bg-blue-600 text-white rounded-br-sm' 
                 : message.isError
-                  ? 'bg-red-50 text-red-800 rounded-bl-sm border border-red-200'
+                  ? 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-bl-sm border border-red-200 dark:border-red-800'
                   : message.isWelcome
-                    ? 'bg-gradient-to-r from-purple-50 to-blue-50 text-slate-800 rounded-bl-sm border border-purple-200'
-                    : 'bg-slate-100 text-slate-800 rounded-bl-sm'
+                    ? 'bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 text-slate-800 dark:text-gray-200 rounded-bl-sm border border-purple-200 dark:border-purple-800'
+                    : 'bg-slate-100 dark:bg-gray-700 text-slate-800 dark:text-gray-200 rounded-bl-sm'
             }`}>
               <p className="text-sm whitespace-pre-wrap">{message.text}</p>
               {message.coordinates && (
-                <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-center gap-2 text-blue-700">
+                <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
                     <MapPin className="w-4 h-4" />
                     <span className="text-xs font-medium">
                       Navigating to: {message.coordinates[0].lat.toFixed(4)}, {message.coordinates[0].lng.toFixed(4)}
@@ -245,7 +245,7 @@ const AIChatAssistant = ({
                 </div>
               )}
             </div>
-            <div className={`text-xs text-slate-500 mt-1 ${isUser ? 'text-right' : 'text-left'}`}>
+            <div className={`text-xs text-slate-500 dark:text-gray-400 mt-1 ${isUser ? 'text-right' : 'text-left'}`}>
               {formatTime(message.timestamp)}
             </div>
           </div>
@@ -258,7 +258,7 @@ const AIChatAssistant = ({
 
   return (
     <div className={`fixed bottom-4 right-4 z-[9999] ${isMinimized ? 'w-16' : 'w-96'} transition-all duration-300`}>
-      <div className={`bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden ${
+      <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 overflow-hidden ${
         isMinimized ? 'h-16' : 'h-[600px]'
       }`}>
         {/* Header */}
@@ -295,7 +295,7 @@ const AIChatAssistant = ({
         {!isMinimized && (
           <>
             {/* Messages */}
-            <div className="h-[400px] overflow-y-auto p-4 bg-slate-50">
+            <div className="h-[400px] overflow-y-auto p-4 bg-slate-50 dark:bg-gray-900">
               {messages.map(renderMessage)}
               {isLoading && (
                 <div className="flex justify-start mb-4">
@@ -303,11 +303,11 @@ const AIChatAssistant = ({
                     <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-blue-600 text-white flex items-center justify-center">
                       <Bot className="w-4 h-4" />
                     </div>
-                    <div className="bg-slate-100 text-slate-800 rounded-2xl rounded-bl-sm p-3">
+                    <div className="bg-slate-100 dark:bg-gray-700 text-slate-800 dark:text-gray-200 rounded-2xl rounded-bl-sm p-3">
                       <div className="flex items-center gap-2">
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                        <div className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                        <div className="w-2 h-2 bg-slate-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                        <div className="w-2 h-2 bg-slate-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                        <div className="w-2 h-2 bg-slate-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
                       </div>
                     </div>
                   </div>
@@ -318,12 +318,12 @@ const AIChatAssistant = ({
 
             {/* Quick Questions */}
             {messages.length <= 2 && (
-              <div className="p-4 bg-white border-t border-slate-200">
-                <p className="text-xs font-medium text-slate-600 mb-3">Quick Questions:</p>
+              <div className="p-4 bg-white dark:bg-gray-800 border-t border-slate-200 dark:border-gray-700">
+                <p className="text-xs font-medium text-slate-600 dark:text-gray-400 mb-3">Quick Questions:</p>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
                   {categories.map(category => (
                     <div key={category} className="space-y-1">
-                      <p className="text-xs font-medium text-slate-500">{category}</p>
+                      <p className="text-xs font-medium text-slate-500 dark:text-gray-400">{category}</p>
                       {preMadeQuestions
                         .filter(q => q.category === category)
                         .slice(0, 2)
@@ -331,7 +331,7 @@ const AIChatAssistant = ({
                           <button
                             key={question.id}
                             onClick={() => handleQuestionClick(question)}
-                            className="w-full text-left p-2 bg-slate-50 hover:bg-slate-100 rounded-lg text-xs text-slate-700 transition-colors flex items-center gap-2"
+                            className="w-full text-left p-2 bg-slate-50 dark:bg-gray-700 hover:bg-slate-100 dark:hover:bg-gray-600 rounded-lg text-xs text-slate-700 dark:text-gray-300 transition-colors flex items-center gap-2"
                           >
                             {question.icon}
                             <span className="truncate">{question.text}</span>
@@ -344,7 +344,7 @@ const AIChatAssistant = ({
             )}
 
             {/* Input */}
-            <div className="p-4 bg-white border-t border-slate-200">
+            <div className="p-4 bg-white dark:bg-gray-800 border-t border-slate-200 dark:border-gray-700">
               <div className="flex gap-2">
                 <input
                   ref={inputRef}
@@ -353,7 +353,7 @@ const AIChatAssistant = ({
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyPress={handleKeyPress}
                   placeholder="Ask about heatwaves, safety, or locations..."
-                  className="flex-1 px-3 py-2 text-sm border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="flex-1 px-3 py-2 text-sm border border-slate-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent placeholder-gray-500 dark:placeholder-gray-400"
                   disabled={isLoading}
                 />
                 <button

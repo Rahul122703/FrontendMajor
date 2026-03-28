@@ -7,9 +7,9 @@ const KPICards = ({ data }) => {
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 p-4 lg:p-6">
         {[...Array(5)].map((_, i) => (
-          <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-pulse">
-            <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
-            <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+          <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 animate-pulse">
+            <div className="h-4 bg-gray-200 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
+            <div className="h-8 bg-gray-200 dark:bg-gray-600 rounded w-1/2"></div>
           </div>
         ))}
       </div>
@@ -34,36 +34,36 @@ const KPICards = ({ data }) => {
       title: 'Total Points',
       value: displayData.length,
       icon: MapPin,
-      color: 'text-blue-600',
-      bgColor: 'bg-blue-50'
+      color: 'text-blue-600 dark:text-blue-400',
+      bgColor: 'bg-blue-50 dark:bg-blue-900/30'
     },
     {
       title: 'Avg Temperature',
       value: formatTemperature(avgTemp),
       icon: Thermometer,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50'
+      color: 'text-orange-600 dark:text-orange-400',
+      bgColor: 'bg-orange-50 dark:bg-orange-900/30'
     },
     {
       title: 'Max Temperature',
       value: formatTemperature(maxTemp),
       icon: TrendingUp,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50'
+      color: 'text-red-600 dark:text-red-400',
+      bgColor: 'bg-red-50 dark:bg-red-900/30'
     },
     {
       title: 'Avg Heatwave Risk',
       value: formatProbability(avgHeatwaveProb),
       icon: Activity,
-      color: 'text-yellow-600',
-      bgColor: 'bg-yellow-50'
+      color: 'text-yellow-600 dark:text-yellow-400',
+      bgColor: 'bg-yellow-50 dark:bg-yellow-900/30'
     },
     {
       title: 'Heatwave Points',
       value: `${heatwaveCount} (${Math.round((heatwaveCount / displayData.length) * 100)}%)`,
       icon: AlertTriangle,
-      color: 'text-red-600',
-      bgColor: 'bg-red-50'
+      color: 'text-red-600 dark:text-red-400',
+      bgColor: 'bg-red-50 dark:bg-red-900/30'
     }
   ];
 
@@ -72,14 +72,14 @@ const KPICards = ({ data }) => {
       {kpis.map((kpi, index) => {
         const Icon = kpi.icon;
         return (
-          <div key={index} className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow">
+          <div key={index} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm font-medium text-gray-600">{kpi.title}</span>
+              <span className="text-sm font-medium text-gray-600 dark:text-gray-300">{kpi.title}</span>
               <div className={`p-2 rounded-lg ${kpi.bgColor}`}>
                 <Icon className={`w-4 h-4 ${kpi.color}`} />
               </div>
             </div>
-            <div className="text-2xl font-bold text-gray-900">{kpi.value}</div>
+            <div className="text-2xl font-bold text-gray-900 dark:text-gray-100">{kpi.value}</div>
           </div>
         );
       })}

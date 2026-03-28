@@ -10,6 +10,7 @@ import DataTable from './components/DataTable';
 import ForecastDetailPage from './components/ForecastDetailPage';
 import AIChatAssistant from './components/AIChatAssistant';
 import { fetchForecastData } from './services/api';
+import { DarkModeProvider, useDarkMode } from './contexts/DarkModeContext';
 
 function Dashboard() {
   const [forecastData, setForecastData] = useState(null);
@@ -72,10 +73,10 @@ function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading forecast data...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
+          <p className="text-gray-600 dark:text-gray-300">Loading forecast data...</p>
         </div>
       </div>
     );
@@ -83,12 +84,12 @@ function Dashboard() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-red-600 mb-4">{error}</div>
+          <div className="text-red-600 dark:text-red-400 mb-4">{error}</div>
           <button
             onClick={() => window.location.reload()}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
           >
             Retry
           </button>
@@ -98,7 +99,7 @@ function Dashboard() {
   }
 
   return (
-    <div className="bg-gray-50 flex flex-col h-screen min-h-screen">
+    <div className="bg-gray-50 dark:bg-gray-900 flex flex-col h-screen min-h-screen">
       <Header 
         data={forecastData} 
         lastUpdated={lastUpdated}
@@ -115,14 +116,14 @@ function Dashboard() {
         {/* Main Content Area */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Navigation Tabs */}
-          <div className="bg-white border-b border-gray-200 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 shrink-0">
+          <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-2 sm:px-4 lg:px-6 py-2 sm:py-3 shrink-0">
             <div className="flex space-x-1 sm:space-x-2 lg:space-x-4 overflow-x-auto">
               <button
                 onClick={() => setActiveView('map')}
                 className={`py-2 sm:py-3 px-2 sm:px-3 lg:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                   activeView === 'map'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
                 <span className="flex items-center gap-1">
@@ -136,8 +137,8 @@ function Dashboard() {
                 onClick={() => setActiveView('analytics')}
                 className={`py-2 sm:py-3 px-2 sm:px-3 lg:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                   activeView === 'analytics'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
                 <span className="flex items-center gap-1">
@@ -151,8 +152,8 @@ function Dashboard() {
                 onClick={() => setActiveView('table')}
                 className={`py-2 sm:py-3 px-2 sm:px-3 lg:px-4 border-b-2 font-medium text-xs sm:text-sm transition-colors whitespace-nowrap ${
                   activeView === 'table'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'
                 }`}
               >
                 <span className="flex items-center gap-1">
@@ -202,14 +203,14 @@ function Dashboard() {
         {selectedPoint && (
           <>
             {/* Mobile Detail Panel - Bottom Sheet */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 z-50 max-h-[70vh] overflow-y-auto">
-              <div className="flex items-center justify-between p-3 border-b border-gray-200">
-                <h3 className="text-sm font-semibold text-gray-900">Location Details</h3>
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50 max-h-[70vh] overflow-y-auto">
+              <div className="flex items-center justify-between p-3 border-b border-gray-200 dark:border-gray-700">
+                <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100">Location Details</h3>
                 <button
                   onClick={handleCloseDetail}
-                  className="p-1 rounded-lg hover:bg-gray-100 transition-colors"
+                  className="p-1 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                 >
-                  <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>
                 </button>
@@ -223,7 +224,7 @@ function Dashboard() {
             </div>
 
             {/* Desktop Detail Panel - Sidebar */}
-            <div className="hidden lg:block lg:w-96 xl:w-104 border-t lg:border-t-0 lg:border-l border-gray-200 shrink-0">
+            <div className="hidden lg:block lg:w-96 xl:w-104 border-t lg:border-t-0 lg:border-l border-gray-200 dark:border-gray-700 shrink-0">
               <DetailPanel 
                 selectedPoint={selectedPoint} 
                 onClose={handleCloseDetail}
@@ -234,7 +235,7 @@ function Dashboard() {
 
         {/* Mobile Sidebar KPI - Floating Action */}
         <div className="lg:hidden fixed bottom-4 right-4 z-30">
-          <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-3 max-w-xs opacity-90 hover:opacity-100 transition-opacity">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 p-3 max-w-xs opacity-90 hover:opacity-100 transition-opacity">
             <SidebarKPI data={forecastData} mobile={true} />
           </div>
         </div>
@@ -257,10 +258,12 @@ function Dashboard() {
 
 function App() {
   return (
-    <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/forecast/:lat/:lon" element={<ForecastDetailPage />} />
-    </Routes>
+    <DarkModeProvider>
+      <Routes>
+        <Route path="/" element={<Dashboard />} />
+        <Route path="/forecast/:lat/:lon" element={<ForecastDetailPage />} />
+      </Routes>
+    </DarkModeProvider>
   );
 }
 

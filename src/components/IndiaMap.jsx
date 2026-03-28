@@ -53,15 +53,15 @@ const LocationNotification = ({ userLocation, nearestLocation, distance, isVisib
     : "N/A";
 
   return (
-    <div className="absolute top-20 left-4 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-1000 max-w-sm backdrop-blur-sm bg-opacity-95">
+    <div className="absolute top-20 left-4 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 p-4 z-1000 max-w-sm backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
-          <User className="w-5 h-5 text-blue-600" />
-          <h3 className="font-bold text-sm text-slate-900">Your Nearest Location</h3>
+          <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+          <h3 className="font-bold text-sm text-slate-900 dark:text-gray-100">Your Nearest Location</h3>
         </div>
         <button
           onClick={onClose}
-          className="text-slate-400 hover:text-slate-600 transition-colors"
+          className="text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors"
         >
           <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -70,40 +70,40 @@ const LocationNotification = ({ userLocation, nearestLocation, distance, isVisib
       </div>
       
       <div className="space-y-3">
-        <div className="bg-blue-50 rounded-lg p-3">
+        <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3">
           <div className="flex items-center gap-2 mb-1">
-            <MapPin className="w-4 h-4 text-blue-600" />
-            <span className="text-xs font-medium text-blue-900">Nearest Region</span>
+            <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+            <span className="text-xs font-medium text-blue-900 dark:text-blue-100">Nearest Region</span>
           </div>
-          <p className="text-sm font-bold text-slate-900">{nearestLocation.region_name || "Unknown Region"}</p>
-          <p className="text-xs text-slate-600 mt-1">Distance: {distance.toFixed(1)} km away</p>
+          <p className="text-sm font-bold text-slate-900 dark:text-gray-100">{nearestLocation.region_name || "Unknown Region"}</p>
+          <p className="text-xs text-slate-600 dark:text-gray-300 mt-1">Distance: {distance.toFixed(1)} km away</p>
         </div>
         
         <div className="grid grid-cols-2 gap-2">
-          <div className="bg-orange-50 rounded-lg p-2">
+          <div className="bg-orange-50 dark:bg-orange-900/30 rounded-lg p-2">
             <div className="flex items-center gap-1 mb-1">
-              <Thermometer className="w-3 h-3 text-orange-600" />
-              <span className="text-xs font-medium text-orange-900">Temperature</span>
+              <Thermometer className="w-3 h-3 text-orange-600 dark:text-orange-400" />
+              <span className="text-xs font-medium text-orange-900 dark:text-orange-100">Temperature</span>
             </div>
-            <p className="text-sm font-bold text-slate-900">{displayTemp}</p>
+            <p className="text-sm font-bold text-slate-900 dark:text-gray-100">{displayTemp}</p>
             <button
               onClick={handleTemperatureToggle}
-              className="text-xs text-orange-600 hover:text-orange-700 mt-1"
+              className="text-xs text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 mt-1"
             >
               Switch to {isCelsius ? '°F' : '°C'}
             </button>
           </div>
           
-          <div className="bg-red-50 rounded-lg p-2">
+          <div className="bg-red-50 dark:bg-red-900/30 rounded-lg p-2">
             <div className="flex items-center gap-1 mb-1">
-              <AlertTriangle className="w-3 h-3 text-red-600" />
-              <span className="text-xs font-medium text-red-900">Heatwave Risk</span>
+              <AlertTriangle className="w-3 h-3 text-red-600 dark:text-red-400" />
+              <span className="text-xs font-medium text-red-900 dark:text-red-100">Heatwave Risk</span>
             </div>
-            <p className="text-sm font-bold text-slate-900">
+            <p className="text-sm font-bold text-slate-900 dark:text-gray-100">
               {nearestLocation.hw_prob !== null ? Math.round(nearestLocation.hw_prob * 100) + "%" : "N/A"}
             </p>
             {nearestLocation.hw_prob !== null && nearestLocation.hw_prob > 0.4 && (
-              <span className="text-xs text-red-600 font-medium">High Risk</span>
+              <span className="text-xs text-red-600 dark:text-red-400 font-medium">High Risk</span>
             )}
           </div>
         </div>
@@ -116,14 +116,14 @@ const LocationNotification = ({ userLocation, nearestLocation, distance, isVisib
                 mapInstanceRef.current.setView([nearestLocation.lat, nearestLocation.lon], 9);
               }
             }}
-            className="flex-1 bg-blue-100 text-blue-700 rounded-lg px-3 py-2 text-xs font-medium hover:bg-blue-200 transition-colors flex items-center justify-center gap-1"
+            className="flex-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg px-3 py-2 text-xs font-medium hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors flex items-center justify-center gap-1"
           >
             <MapPin className="w-3 h-3" />
             View on Map
           </button>
           <button
             onClick={onShowDetails}
-            className="flex-1 bg-slate-100 text-slate-700 rounded-lg px-3 py-2 text-xs font-medium hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
+            className="flex-1 bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-300 rounded-lg px-3 py-2 text-xs font-medium hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-1"
           >
             <Info className="w-3 h-3" />
             Details
@@ -813,36 +813,36 @@ const IndiaMap = ({ data, selectedPoint, onPointClick, onNavigateToCoordinates, 
 
   return (
     <div
-      className={`relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-lg ${isFullscreen ? "fixed inset-0 z-40 rounded-none" : ""}`}
+      className={`relative bg-white dark:bg-gray-800 rounded-2xl border border-slate-200 dark:border-gray-700 overflow-hidden shadow-lg ${isFullscreen ? "fixed inset-0 z-40 rounded-none" : ""}`}
     >
       <div ref={mapRef} className="w-full min-h-[calc(100vh-120px)]" />
       
       {/* Temperature Toggle Button */}
       <button
         onClick={() => setShowTemperatures(!showTemperatures)}
-        className="absolute top-4 left-4 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-[1000] hover:bg-slate-50 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
+        className="absolute top-4 left-4 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 z-[1000] hover:bg-slate-50 dark:hover:bg-gray-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
         title={showTemperatures ? "Show Circles" : "Show Temperatures"}
       >
-        <Thermometer className={`w-4 h-4 ${showTemperatures ? 'text-blue-600' : 'text-gray-600'}`} />
-        <span className="text-xs font-medium">{showTemperatures ? 'Temp' : 'Circles'}</span>
+        <Thermometer className={`w-4 h-4 ${showTemperatures ? 'text-blue-600 dark:text-blue-400' : 'text-gray-600 dark:text-gray-400'}`} />
+        <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{showTemperatures ? 'Temp' : 'Circles'}</span>
       </button>
 
       {/* Animation Control */}
       <button
         onClick={() => setIsAnimating(!isAnimating)}
-        className={`absolute top-4 right-20 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-[1000] hover:bg-slate-50 transition-all duration-200 hover:shadow-xl flex items-center gap-2 ${
-          isAnimating ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'
+        className={`absolute top-4 right-20 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 z-[1000] hover:bg-slate-50 dark:hover:bg-gray-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2 ${
+          isAnimating ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
         }`}
         title={isAnimating ? "Stop Animation" : "Start Animation"}
       >
         {isAnimating ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-        <span className="text-xs font-medium">{isAnimating ? 'Stop' : 'Animate'}</span>
+        <span className="text-xs font-medium text-gray-900 dark:text-gray-100">{isAnimating ? 'Stop' : 'Animate'}</span>
       </button>
 
       {/* Fullscreen Button */}
       <button
         onClick={toggleFullscreen}
-        className="absolute top-4 right-4 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-[1000] hover:bg-slate-50 transition-all duration-200 hover:shadow-xl"
+        className="absolute top-4 right-4 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 z-[1000] hover:bg-slate-50 dark:hover:bg-gray-700 transition-all duration-200 hover:shadow-xl"
         title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
       >
         <svg
@@ -871,10 +871,10 @@ const IndiaMap = ({ data, selectedPoint, onPointClick, onNavigateToCoordinates, 
 
       {/* Location loading indicator */}
       {locationLoading && (
-        <div className="absolute top-4 left-38 bg-white rounded-xl shadow-lg border border-slate-200 p-3 z-[1200]">
+        <div className="absolute top-4 left-38 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 p-3 z-[1200]">
           <div className="flex items-center gap-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-            <span className="text-sm text-slate-600">Getting your location...</span>
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 dark:border-blue-400"></div>
+            <span className="text-sm text-slate-600 dark:text-gray-300">Getting your location...</span>
           </div>
         </div>
       )}
@@ -916,11 +916,11 @@ const IndiaMap = ({ data, selectedPoint, onPointClick, onNavigateToCoordinates, 
               );
             }
           }}
-          className="absolute top-4 left-38 bg-blue-600 text-white p-3 rounded-xl shadow-lg border border-slate-200 z-[1200] hover:bg-blue-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
+          className="absolute top-4 left-38 bg-blue-600 dark:bg-blue-500 text-white p-3 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 z-[1200] hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
           title="Find my current location"
         >
           <User className="w-4 h-4" />
-          <span className="text-sm font-medium">My Location</span>
+          <span className="text-sm font-medium text-white">My Location</span>
         </button>
       )}
 
@@ -939,18 +939,18 @@ const IndiaMap = ({ data, selectedPoint, onPointClick, onNavigateToCoordinates, 
       {nearestLocation && !locationNotificationVisible && (
         <button
           onClick={() => setDetailsModalVisible(true)}
-          className="absolute bottom-20 left-4 bg-blue-600 text-white rounded-xl shadow-lg border border-slate-200 p-3 z-[1200] hover:bg-blue-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
+          className="absolute bottom-20 left-4 bg-blue-600 dark:bg-blue-500 text-white rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 p-3 z-[1200] hover:bg-blue-700 dark:hover:bg-blue-600 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
           title="View nearest location details"
         >
           <Info className="w-4 h-4" />
-          <span className="text-sm font-medium">Details</span>
+          <span className="text-sm font-medium text-white">Details</span>
         </button>
       )}
 
       {/* Hover Info */}
       {hoveredPoint && (
         <div
-          className="absolute bg-white rounded-lg shadow-lg border border-slate-200 p-3 z-[1300] pointer-events-none"
+          className="absolute bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-slate-200 dark:border-gray-700 p-3 z-[1300] pointer-events-none"
           style={{
             left: `${hoverPosition.x}px`,
             top: `${hoverPosition.y}px`,
@@ -958,11 +958,11 @@ const IndiaMap = ({ data, selectedPoint, onPointClick, onNavigateToCoordinates, 
           }}
         >
           <div className="text-sm">
-            <div className="font-semibold text-slate-900">{hoveredPoint.region_name}</div>
-            <div className="text-slate-600">
+            <div className="font-semibold text-slate-900 dark:text-gray-100">{hoveredPoint.region_name}</div>
+            <div className="text-slate-600 dark:text-gray-300">
               Temp: {hoveredPoint.tmax_pred !== null ? Math.round(hoveredPoint.tmax_pred) + "°C" : "N/A"}
             </div>
-            <div className="text-slate-600">
+            <div className="text-slate-600 dark:text-gray-300">
               Risk: {hoveredPoint.hw_prob !== null ? Math.round(hoveredPoint.hw_prob * 100) + "%" : "N/A"}
             </div>
           </div>
@@ -970,61 +970,61 @@ const IndiaMap = ({ data, selectedPoint, onPointClick, onNavigateToCoordinates, 
       )}
 
       {/* Temperature Scale - Hidden on mobile */}
-      <div className={`hidden sm:block absolute bottom-14 left-4 bg-white p-3 sm:p-4 rounded-2xl shadow-lg border border-slate-200 z-[1300] ${isFullscreen ? "scale-110" : ""}`}>
+      <div className={`hidden sm:block absolute bottom-14 left-4 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 z-[1300] ${isFullscreen ? "scale-110" : ""}`}>
         <div className="flex items-center gap-2 mb-3">
-          <Thermometer className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600" />
-          <h4 className="font-semibold text-xs sm:text-sm text-slate-900">Temperature Scale</h4>
+          <Thermometer className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600 dark:text-orange-400" />
+          <h4 className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-gray-100">Temperature Scale</h4>
         </div>
         <div className="space-y-1 sm:space-y-2">
           <div className="flex items-center gap-1 sm:gap-2">
             <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-blue-500"></div>
-            <span className="text-xs text-slate-600">Min: {Math.round(tempRange.min)}°C</span>
+            <span className="text-xs text-slate-600 dark:text-gray-300">Min: {Math.round(tempRange.min)}°C</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
             <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-linear-to-r from-blue-500 via-green-500 to-red-500"></div>
-            <span className="text-xs text-slate-600">Gradient Scale</span>
+            <span className="text-xs text-slate-600 dark:text-gray-300">Gradient Scale</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
             <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-red-700"></div>
-            <span className="text-xs text-slate-600">Max: {Math.round(tempRange.max)}°C</span>
+            <span className="text-xs text-slate-600 dark:text-gray-300">Max: {Math.round(tempRange.max)}°C</span>
           </div>
         </div>
       </div>
 
       {/* Heatwave Risk - Hidden on mobile */}
-      <div className={`hidden sm:block absolute bottom-14 right-4 bg-white p-3 sm:p-4 rounded-2xl shadow-lg border border-slate-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}>
+      <div className={`hidden sm:block absolute bottom-14 right-4 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 z-1000 ${isFullscreen ? "scale-110" : ""}`}>
         <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-red-600" />
-          <h4 className="font-semibold text-xs sm:text-sm text-slate-900">Heatwave Risk</h4>
+          <AlertTriangle className="w-3 h-3 sm:w-4 sm:h-4 text-red-600 dark:text-red-400" />
+          <h4 className="font-semibold text-xs sm:text-sm text-slate-900 dark:text-gray-100">Heatwave Risk</h4>
         </div>
         <div className="space-y-1 sm:space-y-2">
           <div className="flex items-center gap-1 sm:gap-2">
-            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-slate-400"></div>
-            <span className="text-xs text-slate-600">Low (0-20%)</span>
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-slate-400 dark:bg-gray-500"></div>
+            <span className="text-xs text-slate-600 dark:text-gray-300">Low (0-20%)</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
-            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-slate-400"></div>
-            <span className="text-xs text-slate-600">Medium (20-40%)</span>
+            <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-slate-400 dark:bg-gray-500"></div>
+            <span className="text-xs text-slate-600 dark:text-gray-300">Medium (20-40%)</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
-            <div className="w-2.5 h-2.5 sm:w-4 sm:h-4 rounded-full bg-slate-400"></div>
-            <span className="text-xs text-slate-600">High (40-60%)</span>
+            <div className="w-2.5 h-2.5 sm:w-4 sm:h-4 rounded-full bg-slate-400 dark:bg-gray-500"></div>
+            <span className="text-xs text-slate-600 dark:text-gray-300">High (40-60%)</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
-            <div className="w-3 h-3 sm:w-5 sm:h-5 rounded-full bg-slate-400"></div>
-            <span className="text-xs text-slate-600">Very High (60-80%)</span>
+            <div className="w-3 h-3 sm:w-5 sm:h-5 rounded-full bg-slate-400 dark:bg-gray-500"></div>
+            <span className="text-xs text-slate-600 dark:text-gray-300">Very High (60-80%)</span>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
-            <div className="w-3.5 h-3.5 sm:w-6 sm:h-6 rounded-full bg-slate-400"></div>
-            <span className="text-xs text-slate-600">Extreme (80-100%)</span>
+            <div className="w-3.5 h-3.5 sm:w-6 sm:h-6 rounded-full bg-slate-400 dark:bg-gray-500"></div>
+            <span className="text-xs text-slate-600 dark:text-gray-300">Extreme (80-100%)</span>
           </div>
         </div>
       </div>
 
       {/* Timeline Slider - Adjusted for mobile */}
-      <div className="absolute bottom-2 left-2 right-2 sm:left-4 sm:right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-2 sm:p-3 z-1000 shadow-lg">
+      <div className="absolute bottom-2 left-2 right-2 sm:left-4 sm:right-4 bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm border border-gray-200 dark:border-gray-700 rounded-lg p-2 sm:p-3 z-1000 shadow-lg">
         <div className="flex items-center gap-2 sm:gap-3">
-          <span className="text-xs font-medium text-gray-600 whitespace-nowrap">
+          <span className="text-xs font-medium text-gray-600 dark:text-gray-300 whitespace-nowrap">
             Day {selectedLeadDay}/{maxLeadDay}
           </span>
           <input
@@ -1033,7 +1033,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick, onNavigateToCoordinates, 
             max={maxLeadDay}
             value={selectedLeadDay}
             onChange={(e) => setSelectedLeadDay(parseInt(e.target.value))}
-            className="flex-1 h-1 sm:h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+            className="flex-1 h-1 sm:h-1.5 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer slider"
           />
         </div>
       </div>

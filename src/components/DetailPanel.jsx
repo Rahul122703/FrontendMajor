@@ -14,40 +14,40 @@ const DetailPanel = ({ selectedPoint, onClose }) => {
     navigate(`/forecast/${selectedPoint.lat}/${selectedPoint.lon}`);
   };
 
-  const DetailRow = ({ icon: Icon, label, value, color = 'text-gray-900' }) => (
-    <div className="flex items-start gap-3 py-2 border-b border-gray-100 last:border-0">
-      <Icon className="w-4 h-4 text-gray-500 mt-0.5 flex-shrink-0" />
+  const DetailRow = ({ icon: Icon, label, value, color = 'text-gray-900 dark:text-gray-100' }) => (
+    <div className="flex items-start gap-3 py-2 border-b border-gray-100 dark:border-gray-700 last:border-0">
+      <Icon className="w-4 h-4 text-gray-500 dark:text-gray-400 mt-0.5 flex-shrink-0" />
       <div className="flex-1">
-        <div className="text-xs text-gray-500 uppercase tracking-wide">{label}</div>
+        <div className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">{label}</div>
         <div className={`text-sm font-medium ${color}`}>{value}</div>
       </div>
     </div>
   );
 
   return (
-    <div className="bg-white border-l border-gray-200 h-full overflow-y-auto">
-      <div className="sticky top-0 bg-white border-b border-gray-200 p-4 z-10">
+    <div className="bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 h-full overflow-y-auto">
+      <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 z-10">
         <div className="flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-gray-900">Forecast Details</h2>
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Forecast Details</h2>
           <button
             onClick={onClose}
-            className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-gray-500" />
+            <X className="w-5 h-5 text-gray-500 dark:text-gray-400" />
           </button>
         </div>
       </div>
 
       <div className="p-4 space-y-4">
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-4 border border-blue-200">
-          <h3 className="font-semibold text-gray-900 mb-1">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
+          <h3 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
             {selectedPoint.region_name || 'Unknown Region'}
           </h3>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-200">
               {season}
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               Region ID: {selectedPoint.region_id}
             </span>
           </div>
@@ -81,7 +81,7 @@ const DetailPanel = ({ selectedPoint, onClose }) => {
             icon={Thermometer}
             label="Predicted Temperature"
             value={formatTemperature(selectedPoint.tmax_pred)}
-            color={selectedPoint.tmax_pred > 35 ? 'text-red-600' : selectedPoint.tmax_pred > 30 ? 'text-orange-600' : 'text-gray-900'}
+            color={selectedPoint.tmax_pred > 35 ? 'text-red-600 dark:text-red-400' : selectedPoint.tmax_pred > 30 ? 'text-orange-600 dark:text-orange-400' : 'text-gray-900 dark:text-gray-100'}
           />
           {selectedPoint.tmax_obs !== null && selectedPoint.tmax_obs !== undefined && (
             <DetailRow
@@ -104,19 +104,19 @@ const DetailPanel = ({ selectedPoint, onClose }) => {
             icon={AlertTriangle}
             label="Heatwave Probability"
             value={formatProbability(selectedPoint.hw_prob)}
-            color={selectedPoint.hw_prob > 0.6 ? 'text-red-600' : selectedPoint.hw_prob > 0.3 ? 'text-orange-600' : 'text-gray-900'}
+            color={selectedPoint.hw_prob > 0.6 ? 'text-red-600 dark:text-red-400' : selectedPoint.hw_prob > 0.3 ? 'text-orange-600 dark:text-orange-400' : 'text-gray-900 dark:text-gray-100'}
           />
           <DetailRow
             icon={AlertTriangle}
             label="Heatwave Class"
             value={selectedPoint.hw_pred || 'None'}
-            color={selectedPoint.hw_pred && selectedPoint.hw_pred !== 'None' ? 'text-red-600' : 'text-gray-900'}
+            color={selectedPoint.hw_pred && selectedPoint.hw_pred !== 'None' ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-gray-100'}
           />
         </div>
 
         <button
           onClick={handleViewFullForecast}
-          className="w-full bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 font-medium text-sm"
+          className="w-full bg-blue-600 dark:bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors flex items-center justify-center gap-2 font-medium text-sm"
         >
           <ExternalLink className="w-4 h-4" />
           View 7-Day Forecast
@@ -124,8 +124,8 @@ const DetailPanel = ({ selectedPoint, onClose }) => {
 
         {selectedPoint.raw_data && (
           <div className="mt-4">
-            <h4 className="text-sm font-semibold text-gray-900 mb-2">Raw Data</h4>
-            <div className="bg-gray-50 rounded-lg p-3 text-xs text-gray-600 font-mono overflow-x-auto">
+            <h4 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Raw Data</h4>
+            <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 text-xs text-gray-600 dark:text-gray-300 font-mono overflow-x-auto">
               {JSON.stringify(selectedPoint.raw_data, null, 2)}
             </div>
           </div>

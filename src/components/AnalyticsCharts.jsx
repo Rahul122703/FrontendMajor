@@ -5,12 +5,12 @@ import { TrendingUp, TrendingDown, Activity, Thermometer, AlertTriangle, BarChar
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
-      <div className="bg-white p-4 border border-slate-200 rounded-xl shadow-xl backdrop-blur-sm bg-opacity-95">
-        <p className="text-sm font-bold text-slate-900 mb-2">{label}</p>
+      <div className="bg-white dark:bg-gray-800 p-4 border border-slate-200 dark:border-gray-700 rounded-xl shadow-xl backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
+        <p className="text-sm font-bold text-slate-900 dark:text-gray-100 mb-2">{label}</p>
         {payload.map((entry, index) => (
           <div key={index} className="flex items-center justify-between gap-4 mb-1">
-            <span className="text-sm text-slate-600 font-medium">{entry.name}:</span>
-            <span className="text-sm font-bold text-slate-900">
+            <span className="text-sm text-slate-600 dark:text-gray-300 font-medium">{entry.name}:</span>
+            <span className="text-sm font-bold text-slate-900 dark:text-gray-100">
               {entry.name.includes('Temp') ? `${entry.value}°C` : `${entry.value}%`}
             </span>
           </div>
@@ -25,15 +25,15 @@ const PieTooltip = ({ active, payload, dataLength }) => {
   if (active && payload && payload.length) {
     const percentage = Math.round((payload[0].value / dataLength) * 100);
     return (
-      <div className="bg-white p-4 border border-slate-200 rounded-xl shadow-xl backdrop-blur-sm bg-opacity-95">
-        <p className="text-sm font-bold text-slate-900 mb-2">{payload[0].name}</p>
+      <div className="bg-white dark:bg-gray-800 p-4 border border-slate-200 dark:border-gray-700 rounded-xl shadow-xl backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
+        <p className="text-sm font-bold text-slate-900 dark:text-gray-100 mb-2">{payload[0].name}</p>
         <div className="flex items-center justify-between gap-4 mb-1">
-          <span className="text-sm text-slate-600 font-medium">Count:</span>
-          <span className="text-sm font-bold text-slate-900">{payload[0].value}</span>
+          <span className="text-sm text-slate-600 dark:text-gray-300 font-medium">Count:</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-gray-100">{payload[0].value}</span>
         </div>
         <div className="flex items-center justify-between gap-4">
-          <span className="text-sm text-slate-600 font-medium">Percentage:</span>
-          <span className="text-sm font-bold text-slate-900">{percentage}%</span>
+          <span className="text-sm text-slate-600 dark:text-gray-300 font-medium">Percentage:</span>
+          <span className="text-sm font-bold text-slate-900 dark:text-gray-100">{percentage}%</span>
         </div>
       </div>
     );
@@ -44,17 +44,17 @@ const PieTooltip = ({ active, payload, dataLength }) => {
 const AnalyticsCharts = ({ data }) => {
   if (!data || !Array.isArray(data) || data.length === 0) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 p-6">
+      <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-6">
         <div className="max-w-7xl mx-auto">
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">Analytics Dashboard</h1>
-            <p className="text-slate-600">Loading your weather forecast analytics...</p>
+            <h1 className="text-3xl font-bold text-slate-900 dark:text-gray-100 mb-2">Analytics Dashboard</h1>
+            <p className="text-slate-600 dark:text-gray-300">Loading your weather forecast analytics...</p>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white rounded-2xl shadow-lg border border-slate-200 p-6 animate-pulse">
-                <div className="h-6 bg-slate-200 rounded w-1/3 mb-6"></div>
-                <div className="h-80 bg-slate-200 rounded-xl"></div>
+              <div key={i} className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 p-6 animate-pulse">
+                <div className="h-6 bg-slate-200 dark:bg-gray-600 rounded w-1/3 mb-6"></div>
+                <div className="h-80 bg-slate-200 dark:bg-gray-600 rounded-xl"></div>
               </div>
             ))}
           </div>
@@ -135,54 +135,54 @@ const AnalyticsCharts = ({ data }) => {
   const currentSeason = new Date().toLocaleDateString('en-US', { month: 'long' });
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 p-3 sm:p-4 lg:p-6">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-3 sm:p-4 lg:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Summary Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 lg:gap-6 mb-6 sm:mb-8">
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className="p-2 sm:p-3 bg-blue-100 rounded-lg sm:rounded-xl">
-                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-blue-600" />
+              <div className="p-2 sm:p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg sm:rounded-xl">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-blue-600 dark:text-blue-400" />
               </div>
               <div className="text-right">
-                <p className="text-xs sm:text-sm text-slate-600 font-medium">Total Regions</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">{totalRegions}</p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 font-medium">Total Regions</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 dark:text-gray-100">{totalRegions}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className="p-2 sm:p-3 bg-orange-100 rounded-lg sm:rounded-xl">
-                <Thermometer className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-orange-600" />
+              <div className="p-2 sm:p-3 bg-orange-100 dark:bg-orange-900/30 rounded-lg sm:rounded-xl">
+                <Thermometer className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-orange-600 dark:text-orange-400" />
               </div>
               <div className="text-right">
-                <p className="text-xs sm:text-sm text-slate-600 font-medium">Avg Temperature</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">{avgTempOverall}°C</p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 font-medium">Avg Temperature</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 dark:text-gray-100">{avgTempOverall}°C</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className="p-2 sm:p-3 bg-red-100 rounded-lg sm:rounded-xl">
-                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-red-600" />
+              <div className="p-2 sm:p-3 bg-red-100 dark:bg-red-900/30 rounded-lg sm:rounded-xl">
+                <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-red-600 dark:text-red-400" />
               </div>
               <div className="text-right">
-                <p className="text-xs sm:text-sm text-slate-600 font-medium">High Risk Areas</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">{highRiskRegions}</p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 font-medium">High Risk Areas</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 dark:text-gray-100">{highRiskRegions}</p>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex items-center justify-between mb-3 sm:mb-4">
-              <div className="p-2 sm:p-3 bg-green-100 rounded-lg sm:rounded-xl">
-                <Activity className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600" />
+              <div className="p-2 sm:p-3 bg-green-100 dark:bg-green-900/30 rounded-lg sm:rounded-xl">
+                <Activity className="w-4 h-4 sm:w-5 sm:h-5 lg:w-6 lg:h-6 text-green-600 dark:text-green-400" />
               </div>
               <div className="text-right">
-                <p className="text-xs sm:text-sm text-slate-600 font-medium">Data Points</p>
-                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900">{data.length}</p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 font-medium">Data Points</p>
+                <p className="text-lg sm:text-xl lg:text-2xl font-bold text-slate-900 dark:text-gray-100">{data.length}</p>
               </div>
             </div>
           </div>
@@ -191,14 +191,14 @@ const AnalyticsCharts = ({ data }) => {
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
           {/* Temperature by Region Chart */}
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600" />
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-gray-100 flex items-center gap-2">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 dark:text-orange-400" />
                   <span className="truncate">Top 10 Regions by Temperature</span>
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 mt-1 hidden sm:block">Highest average temperatures across regions</p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-1 hidden sm:block">Highest average temperatures across regions</p>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={250}>
@@ -220,14 +220,14 @@ const AnalyticsCharts = ({ data }) => {
           </div>
 
           {/* Temperature Distribution Pie Chart */}
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <PieChartIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600" />
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-gray-100 flex items-center gap-2">
+                  <PieChartIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
                   <span className="truncate">Temperature Distribution</span>
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 mt-1 hidden sm:block">Breakdown of temperature ranges across all regions</p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-1 hidden sm:block">Breakdown of temperature ranges across all regions</p>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={250}>
@@ -257,14 +257,14 @@ const AnalyticsCharts = ({ data }) => {
           </div>
 
           {/* Heatwave Risk Distribution */}
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-gray-100 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400" />
                   <span className="truncate">Heatwave Risk Distribution</span>
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 mt-1 hidden sm:block">Risk levels across all monitored regions</p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-1 hidden sm:block">Risk levels across all monitored regions</p>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={250}>
@@ -294,14 +294,14 @@ const AnalyticsCharts = ({ data }) => {
           </div>
 
           {/* Heatwave Risk by Region */}
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
               <div>
-                <h3 className="text-lg sm:text-xl font-bold text-slate-900 flex items-center gap-2">
-                  <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-red-600" />
+                <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-gray-100 flex items-center gap-2">
+                  <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400" />
                   <span className="truncate">Top 10 Regions by Heatwave Risk</span>
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 mt-1 hidden sm:block">Regions with highest heatwave probability</p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-1 hidden sm:block">Regions with highest heatwave probability</p>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={250}>
@@ -324,7 +324,7 @@ const AnalyticsCharts = ({ data }) => {
         </div>
 
         {/* Footer */}
-        <div className="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-slate-600 px-2">
+        <div className="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-slate-600 dark:text-gray-300 px-2">
           <p className="break-words">Last updated: {new Date().toLocaleString()} | Data points: {data.length} regions</p>
         </div>
       </div>
