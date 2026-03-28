@@ -434,6 +434,62 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
     };
   }, []);
 
+  // Handle zoom events to show/hide temperature labels
+  useEffect(() => {
+    if (!mapInstanceRef.current) return;
+
+    const handleZoom = () => {
+      const zoom = mapInstanceRef.current.getZoom();
+      
+      // Clear existing temperature markers
+      temperatureMarkers.forEach(marker => marker.remove());
+      setTemperatureMarkers([]);
+      
+      // Show temperature labels only when zoomed in (zoom level 8+)
+      if (zoom >= 8 && data && data.length > 0) {
+        const newTempMarkers = [];
+        
+        // Filter data by selected lead day
+        const filteredData = data.filter(point => {
+          if (point.lead === selectedLeadDay) return true;
+          // If exact day doesn't exist, show the latest available day before selected day
+          return point.lead < selectedLeadDay;
+        }).sort((a, b) => b.lead - a.lead)[0] ? data.filter(point => {
+          if (point.lead === selectedLeadDay) return true;
+          const latestAvailable = data.filter(p => p.lead < selectedLeadDay).sort((a, b) => b.lead - a.lead)[0];
+          return latestAvailable && point.lead === latestAvailable.lead;
+        }) : data.filter(point => point.lead === selectedLeadDay);
+        
+        filteredData.forEach((point) => {
+          const temp = point.tmax_pred;
+          
+          if (temp !== null && temp !== undefined) {
+            const tempIcon = L.divIcon({
+              html: `<div class="text-xs font-semibold text-gray-800 bg-white px-1.5 py-0.5 rounded shadow-md border border-gray-200" style="box-shadow: 0 1px 3px rgba(0,0,0,0.2);">${Math.round(temp)}°</div>`,
+              className: "temperature-label",
+              iconSize: [24, 16],
+              iconAnchor: [12, -8]
+            });
+            
+            const tempMarker = L.marker([point.lat, point.lon], { icon: tempIcon });
+            tempMarker.addTo(mapInstanceRef.current);
+            newTempMarkers.push(tempMarker);
+          }
+        });
+        
+        setTemperatureMarkers(newTempMarkers);
+      }
+    };
+
+    mapInstanceRef.current.on('zoomend', handleZoom);
+    
+    return () => {
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.off('zoomend', handleZoom);
+      }
+    };
+  }, [data, selectedLeadDay, temperatureMarkers]);
+
   useEffect(() => {
     if (!mapInstanceRef.current || !data || !Array.isArray(data)) return;
 
