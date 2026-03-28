@@ -1,9 +1,21 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Calendar, Thermometer, AlertTriangle, TrendingUp, MapPin } from 'lucide-react';
-import { fetchForecastData } from '../services/api';
-import { formatTemperature, formatProbability, formatDate, formatDateTime } from '../utils/formatters';
-import { getSeason } from '../services/api';
+import { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import {
+  ArrowLeft,
+  Calendar,
+  Thermometer,
+  AlertTriangle,
+  TrendingUp,
+  MapPin,
+} from "lucide-react";
+import { fetchForecastData } from "../services/api";
+import {
+  formatTemperature,
+  formatProbability,
+  formatDate,
+  formatDateTime,
+} from "../utils/formatters";
+import { getSeason } from "../services/api";
 
 const ForecastDetailPage = () => {
   const { lat, lon } = useParams();
@@ -17,17 +29,20 @@ const ForecastDetailPage = () => {
       try {
         setLoading(true);
         const data = await fetchForecastData();
-        
+
         const locationForecasts = data.filter(
-          item => Math.abs(item.lat - parseFloat(lat)) < 0.01 && 
-                  Math.abs(item.lon - parseFloat(lon)) < 0.01
+          (item) =>
+            Math.abs(item.lat - parseFloat(lat)) < 0.01 &&
+            Math.abs(item.lon - parseFloat(lon)) < 0.01,
         );
-        
-        const sortedForecasts = locationForecasts.sort((a, b) => a.lead - b.lead);
+
+        const sortedForecasts = locationForecasts.sort(
+          (a, b) => a.lead - b.lead,
+        );
         setForecastData(sortedForecasts);
       } catch (err) {
-        setError('Failed to load forecast data');
-        console.error('Error loading forecast data:', err);
+        setError("Failed to load forecast data");
+        console.error("Error loading forecast data:", err);
       } finally {
         setLoading(false);
       }
@@ -53,7 +68,7 @@ const ForecastDetailPage = () => {
         <div className="text-center">
           <div className="text-red-600 mb-4">{error}</div>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Back to Dashboard
@@ -67,9 +82,11 @@ const ForecastDetailPage = () => {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="text-gray-600 mb-4">No forecast data available for this location</div>
+          <div className="text-gray-600 mb-4">
+            No forecast data available for this location
+          </div>
           <button
-            onClick={() => navigate('/')}
+            onClick={() => navigate("/")}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
             Back to Dashboard
@@ -83,22 +100,27 @@ const ForecastDetailPage = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b border-gray-200">
+      <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              <ArrowLeft className="w-5 h-5 text-gray-600" />
-            </button>
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">
-                7-Day Forecast Details
-              </h1>
-              <p className="text-gray-600">
-                {mainForecast.region_name} ({parseFloat(lat).toFixed(4)}, {parseFloat(lon).toFixed(4)})
-              </p>
+          <div className="bg-white border-b border-gray-200 sticky top-0 z-50">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={() => navigate("/")}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                >
+                  <ArrowLeft className="w-5 h-5 text-gray-600" />
+                </button>
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900">
+                    7-Day Forecast Details
+                  </h1>
+                  <p className="text-gray-600">
+                    {mainForecast.region_name} ({parseFloat(lat).toFixed(4)},{" "}
+                    {parseFloat(lon).toFixed(4)})
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -108,24 +130,28 @@ const ForecastDetailPage = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">7-Day Temperature Forecast</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">
+                7-Day Temperature Forecast
+              </h2>
               <div className="space-y-4">
                 {forecastData.map((forecast, index) => {
                   const season = getSeason(forecast.forecast_date);
                   const isToday = index === 0;
-                  
+
                   return (
                     <div
                       key={index}
                       className={`border rounded-lg p-4 ${
-                        isToday ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
+                        isToday
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200"
                       }`}
                     >
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-3">
                           <div>
                             <div className="font-semibold text-gray-900">
-                              {isToday ? 'Today' : `Day ${forecast.lead}`}
+                              {isToday ? "Today" : `Day ${forecast.lead}`}
                             </div>
                             <div className="text-sm text-gray-600">
                               {formatDate(forecast.forecast_date)}
@@ -136,14 +162,20 @@ const ForecastDetailPage = () => {
                           </span>
                         </div>
                         <div className="text-right">
-                          <div className={`text-2xl font-bold ${
-                            forecast.tmax_pred > 35 ? 'text-red-600' : 
-                            forecast.tmax_pred > 30 ? 'text-orange-600' : 
-                            'text-gray-900'
-                          }`}>
+                          <div
+                            className={`text-2xl font-bold ${
+                              forecast.tmax_pred > 35
+                                ? "text-red-600"
+                                : forecast.tmax_pred > 30
+                                  ? "text-orange-600"
+                                  : "text-gray-900"
+                            }`}
+                          >
                             {formatTemperature(forecast.tmax_pred)}
                           </div>
-                          <div className="text-sm text-gray-600">Predicted Max</div>
+                          <div className="text-sm text-gray-600">
+                            Predicted Max
+                          </div>
                         </div>
                       </div>
 
@@ -151,12 +183,18 @@ const ForecastDetailPage = () => {
                         <div className="flex items-center gap-2">
                           <AlertTriangle className="w-4 h-4 text-gray-500" />
                           <div>
-                            <div className="text-xs text-gray-500">Heatwave Risk</div>
-                            <div className={`text-sm font-medium ${
-                              forecast.hw_prob > 0.6 ? 'text-red-600' : 
-                              forecast.hw_prob > 0.3 ? 'text-orange-600' : 
-                              'text-gray-900'
-                            }`}>
+                            <div className="text-xs text-gray-500">
+                              Heatwave Risk
+                            </div>
+                            <div
+                              className={`text-sm font-medium ${
+                                forecast.hw_prob > 0.6
+                                  ? "text-red-600"
+                                  : forecast.hw_prob > 0.3
+                                    ? "text-orange-600"
+                                    : "text-gray-900"
+                              }`}
+                            >
                               {formatProbability(forecast.hw_prob)}
                             </div>
                           </div>
@@ -165,39 +203,50 @@ const ForecastDetailPage = () => {
                         <div className="flex items-center gap-2">
                           <TrendingUp className="w-4 h-4 text-gray-500" />
                           <div>
-                            <div className="text-xs text-gray-500">Heatwave Class</div>
-                            <div className={`text-sm font-medium ${
-                              forecast.hw_pred && forecast.hw_pred !== 'None' 
-                                ? 'text-red-600' : 'text-gray-900'
-                            }`}>
-                              {forecast.hw_pred || 'None'}
+                            <div className="text-xs text-gray-500">
+                              Heatwave Class
+                            </div>
+                            <div
+                              className={`text-sm font-medium ${
+                                forecast.hw_pred && forecast.hw_pred !== "None"
+                                  ? "text-red-600"
+                                  : "text-gray-900"
+                              }`}
+                            >
+                              {forecast.hw_pred || "None"}
                             </div>
                           </div>
                         </div>
 
-                        {forecast.tmax_obs !== null && forecast.tmax_obs !== undefined && (
-                          <div className="flex items-center gap-2">
-                            <Thermometer className="w-4 h-4 text-gray-500" />
-                            <div>
-                              <div className="text-xs text-gray-500">Observed</div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {formatTemperature(forecast.tmax_obs)}
+                        {forecast.tmax_obs !== null &&
+                          forecast.tmax_obs !== undefined && (
+                            <div className="flex items-center gap-2">
+                              <Thermometer className="w-4 h-4 text-gray-500" />
+                              <div>
+                                <div className="text-xs text-gray-500">
+                                  Observed
+                                </div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {formatTemperature(forecast.tmax_obs)}
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
 
-                        {forecast.error !== null && forecast.error !== undefined && (
-                          <div className="flex items-center gap-2">
-                            <TrendingUp className="w-4 h-4 text-gray-500" />
-                            <div>
-                              <div className="text-xs text-gray-500">Error</div>
-                              <div className="text-sm font-medium text-gray-900">
-                                {Math.round(forecast.error * 100) / 100}°C
+                        {forecast.error !== null &&
+                          forecast.error !== undefined && (
+                            <div className="flex items-center gap-2">
+                              <TrendingUp className="w-4 h-4 text-gray-500" />
+                              <div>
+                                <div className="text-xs text-gray-500">
+                                  Error
+                                </div>
+                                <div className="text-sm font-medium text-gray-900">
+                                  {Math.round(forecast.error * 100) / 100}°C
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        )}
+                          )}
                       </div>
                     </div>
                   );
@@ -208,13 +257,17 @@ const ForecastDetailPage = () => {
 
           <div className="space-y-6">
             <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Location Details</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Location Details
+              </h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <MapPin className="w-4 h-4 text-gray-500" />
                   <div>
                     <div className="text-sm text-gray-500">Region</div>
-                    <div className="font-medium text-gray-900">{mainForecast.region_name}</div>
+                    <div className="font-medium text-gray-900">
+                      {mainForecast.region_name}
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
@@ -230,14 +283,18 @@ const ForecastDetailPage = () => {
                   <Calendar className="w-4 h-4 text-gray-500" />
                   <div>
                     <div className="text-sm text-gray-500">Region ID</div>
-                    <div className="font-medium text-gray-900">{mainForecast.region_id}</div>
+                    <div className="font-medium text-gray-900">
+                      {mainForecast.region_id}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
 
             <div className="bg-white rounded-lg border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Forecast Summary</h3>
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Forecast Summary
+              </h3>
               <div className="space-y-3">
                 <div>
                   <div className="text-sm text-gray-500">Issue Date</div>
@@ -248,25 +305,40 @@ const ForecastDetailPage = () => {
                 <div>
                   <div className="text-sm text-gray-500">Forecast Range</div>
                   <div className="font-medium text-gray-900">
-                    {formatDate(forecastData[0].forecast_date)} - {formatDate(forecastData[forecastData.length - 1].forecast_date)}
+                    {formatDate(forecastData[0].forecast_date)} -{" "}
+                    {formatDate(
+                      forecastData[forecastData.length - 1].forecast_date,
+                    )}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500">Avg Temperature</div>
                   <div className="font-medium text-gray-900">
-                    {formatTemperature(forecastData.reduce((sum, f) => sum + (f.tmax_pred || 0), 0) / forecastData.length)}
+                    {formatTemperature(
+                      forecastData.reduce(
+                        (sum, f) => sum + (f.tmax_pred || 0),
+                        0,
+                      ) / forecastData.length,
+                    )}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500">Max Temperature</div>
                   <div className="font-medium text-gray-900">
-                    {formatTemperature(Math.max(...forecastData.map(f => f.tmax_pred || 0)))}
+                    {formatTemperature(
+                      Math.max(...forecastData.map((f) => f.tmax_pred || 0)),
+                    )}
                   </div>
                 </div>
                 <div>
                   <div className="text-sm text-gray-500">Heatwave Days</div>
                   <div className="font-medium text-gray-900">
-                    {forecastData.filter(f => f.hw_pred && f.hw_pred !== 'None').length} out of {forecastData.length}
+                    {
+                      forecastData.filter(
+                        (f) => f.hw_pred && f.hw_pred !== "None",
+                      ).length
+                    }{" "}
+                    out of {forecastData.length}
                   </div>
                 </div>
               </div>

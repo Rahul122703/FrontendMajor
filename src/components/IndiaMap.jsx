@@ -1,7 +1,202 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { MapPin, User, Info, X } from "lucide-react";
+
+const LocationNotification = ({ userLocation, nearestLocation, distance, isVisible, onClose, onShowDetails }) => {
+  if (!isVisible || !userLocation || !nearestLocation) return null;
+
+  return (
+    <div className="absolute top-4 left-4 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-1000 max-w-sm backdrop-blur-sm bg-opacity-95">
+      <div className="flex items-start justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <User className="w-5 h-5 text-blue-600" />
+          <h3 className="font-bold text-sm text-slate-900">Your Nearest Location</h3>
+        </div>
+        <button
+          onClick={onClose}
+          className="text-slate-400 hover:text-slate-600 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      
+      <div className="space-y-3">
+        <div className="bg-blue-50 rounded-lg p-3">
+          <div className="flex items-center gap-2 mb-1">
+            <MapPin className="w-4 h-4 text-blue-600" />
+            <span className="text-xs font-medium text-blue-900">Nearest Region</span>
+          </div>
+          <p className="text-sm font-bold text-slate-900">{nearestLocation.region_name || "Unknown Region"}</p>
+          <p className="text-xs text-slate-600 mt-1">Distance: {distance.toFixed(1)} km</p>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-2">
+          <div className="bg-orange-50 rounded-lg p-2">
+            <div className="flex items-center gap-1 mb-1">
+              <span className="text-xs font-medium text-orange-900">Temperature</span>
+            </div>
+            <p className="text-sm font-bold text-slate-900">
+              {nearestLocation.tmax_pred !== null ? Math.round(nearestLocation.tmax_pred) + "°C" : "N/A"}
+            </p>
+          </div>
+          
+          <div className="bg-red-50 rounded-lg p-2">
+            <div className="flex items-center gap-1 mb-1">
+              <span className="text-xs font-medium text-red-900">Heatwave Risk</span>
+            </div>
+            <p className="text-sm font-bold text-slate-900">
+              {nearestLocation.hw_prob !== null ? Math.round(nearestLocation.hw_prob * 100) + "%" : "N/A"}
+            </p>
+          </div>
+        </div>
+        
+        <button
+          onClick={onShowDetails}
+          className="w-full bg-slate-100 text-slate-700 rounded-lg px-3 py-2 text-sm font-medium hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
+        >
+          <Info className="w-4 h-4" />
+          View All Data
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const NearestLocationModal = ({ nearestLocation, distance, isVisible, onClose }) => {
+  if (!isVisible || !nearestLocation) return null;
+
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-white bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-9999 p-4">
+      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full max-h-[90vh] overflow-hidden">
+        {/* Header */}
+        <div className="bg-linear-to-r from-blue-600 to-blue-700 p-6 text-white">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <MapPin className="w-6 h-6" />
+                <h2 className="text-2xl font-bold">Your Nearest Location</h2>
+              </div>
+              <p className="text-blue-100 text-lg">{nearestLocation.region_name || "Unknown Region"}</p>
+              <p className="text-blue-200 text-sm mt-1">Distance: {distance.toFixed(1)} km away</p>
+            </div>
+            <button
+              onClick={onClose}
+              className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+
+        {/* Content */}
+        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+          {/* Quick Stats */}
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm font-medium text-orange-900">Temperature</span>
+              </div>
+              <p className="text-2xl font-bold text-slate-900">
+                {nearestLocation.tmax_pred !== null ? Math.round(nearestLocation.tmax_pred) + "°C" : "N/A"}
+              </p>
+              <p className="text-xs text-slate-600 mt-1">Predicted Max</p>
+            </div>
+            
+            <div className="bg-red-50 rounded-xl p-4 border border-red-200">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm font-medium text-red-900">Heatwave Risk</span>
+              </div>
+              <p className="text-2xl font-bold text-slate-900">
+                {nearestLocation.hw_prob !== null ? Math.round(nearestLocation.hw_prob * 100) + "%" : "N/A"}
+              </p>
+              <p className="text-xs text-slate-600 mt-1">Probability</p>
+            </div>
+          </div>
+
+          {/* Basic Information */}
+          <div className="mb-4">
+            <div className="p-4 bg-white rounded-xl border border-slate-200">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-slate-600">Coordinates</p>
+                  <p className="font-semibold text-slate-900">
+                    {nearestLocation.lat?.toFixed(4)}, {nearestLocation.lon?.toFixed(4)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Lead Day</p>
+                  <p className="font-semibold text-slate-900">{nearestLocation.lead || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Heatwave Class</p>
+                  <p className="font-semibold text-slate-900">{nearestLocation.hw_pred || "None"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Distance from You</p>
+                  <p className="font-semibold text-slate-900">{distance.toFixed(1)} km</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Forecast Details */}
+          <div className="mb-4">
+            <div className="p-4 bg-white rounded-xl border border-slate-200">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm text-slate-600">Issue Date</p>
+                  <p className="font-semibold text-slate-900">{formatDate(nearestLocation.issue_date)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Forecast Date</p>
+                  <p className="font-semibold text-slate-900">{formatDate(nearestLocation.forecast_date)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Days Ahead</p>
+                  <p className="font-semibold text-slate-900">
+                    {Math.ceil((new Date(nearestLocation.forecast_date) - new Date(nearestLocation.issue_date)) / (1000 * 60 * 60 * 24))} days
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex gap-3 mt-6">
+            <button
+              onClick={() => window.open(`/forecast/${nearestLocation.lat}/${nearestLocation.lon}`, '_blank')}
+              className="flex-1 bg-blue-600 text-white rounded-xl px-4 py-3 font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
+            >
+              View 7-Day Forecast
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+            <button
+              onClick={onClose}
+              className="px-4 py-3 bg-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-300 transition-colors"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const HoverCard = ({ point, position, isVisible }) => {
   if (!isVisible || !point) return null;
@@ -74,6 +269,94 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hoveredPoint, setHoveredPoint] = useState(null);
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
+  const [userLocation, setUserLocation] = useState(null);
+  const [nearestLocation, setNearestLocation] = useState(null);
+  const [locationNotificationVisible, setLocationNotificationVisible] = useState(false);
+  const [locationLoading, setLocationLoading] = useState(true);
+  const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+
+  // Calculate distance between two coordinates (Haversine formula)
+  const calculateDistance = (lat1, lon1, lat2, lon2) => {
+    const R = 6371; // Earth's radius in kilometers
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = 
+      Math.sin(dLat/2) * Math.sin(dLat/2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
+      Math.sin(dLon/2) * Math.sin(dLon/2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    return R * c;
+  };
+
+  // Find nearest location to user
+  const findNearestLocation = useCallback((userLat, userLon, data) => {
+    if (!data || !Array.isArray(data) || data.length === 0) return null;
+    
+    let nearest = null;
+    let minDistance = Infinity;
+    
+    data.forEach(point => {
+      if (point.lat && point.lon) {
+        const distance = calculateDistance(userLat, userLon, point.lat, point.lon);
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearest = { ...point, distance };
+        }
+      }
+    });
+    
+    return nearest;
+  }, []);
+
+  // Get user location
+  useEffect(() => {
+    if (!data || !Array.isArray(data) || data.length === 0) return;
+    
+    setLocationLoading(true);
+    
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setUserLocation({ lat: latitude, lon: longitude });
+          
+          // Find nearest location
+          const nearest = findNearestLocation(latitude, longitude, data);
+          if (nearest) {
+            setNearestLocation(nearest);
+            setLocationNotificationVisible(true);
+            
+            // Center map on user location with appropriate zoom
+            if (mapInstanceRef.current) {
+              mapInstanceRef.current.setView([latitude, longitude], 8);
+            }
+          }
+          
+          setLocationLoading(false);
+        },
+        (error) => {
+          console.error('Error getting location:', error);
+          setLocationLoading(false);
+          // Fallback to center of India if location access denied
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.setView([20.5937, 78.9629], 5);
+          }
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000,
+          maximumAge: 300000 // 5 minutes
+        }
+      );
+    } else {
+      console.error('Geolocation is not supported by this browser');
+      setLocationLoading(false);
+      // Fallback to center of India
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.setView([20.5937, 78.9629], 5);
+      }
+    }
+  }, [data, findNearestLocation]);
 
   useEffect(() => {
     if (!mapInstanceRef.current && mapRef.current) {
@@ -114,14 +397,6 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       return "#dc2626";
     };
 
-    const getHeatwaveColor = (hwProb) => {
-      if (hwProb === null || hwProb === undefined) return "#94a3b8";
-      if (hwProb < 0.2) return "#10b981";
-      if (hwProb < 0.4) return "#f59e0b";
-      if (hwProb < 0.6) return "#f97316";
-      if (hwProb < 0.8) return "#ef4444";
-      return "#dc2626";
-    };
 
     data.forEach((point) => {
       const temp = point.tmax_pred;
@@ -201,13 +476,34 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       markersRef.current.push(circle);
     });
 
-    if (data && data.length > 0) {
-      const bounds = L.latLngBounds(
-        data.map((point) => [point.lat, point.lon]),
-      );
-      mapInstanceRef.current.fitBounds(bounds, { padding: [20, 20] });
-    }
-  }, [data, onPointClick, navigate]);
+      // Add user location marker if available
+      if (userLocation && mapInstanceRef.current) {
+        const userIcon = L.divIcon({
+          html: `<div class="flex items-center justify-center w-8 h-8 bg-blue-600 rounded-full border-2 border-white shadow-lg">
+                  <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"/>
+                  </svg>
+                </div>`,
+          className: "user-location-marker",
+          iconSize: [32, 32],
+          iconAnchor: [16, 16]
+        });
+        
+        L.marker([userLocation.lat, userLocation.lon], { icon: userIcon })
+          .addTo(mapInstanceRef.current)
+          .bindPopup("Your Location")
+          .on('click', () => {
+            setDetailsModalVisible(true);
+          });
+      }
+
+      if (data && data.length > 0 && !userLocation) {
+        const bounds = L.latLngBounds(
+          data.map((point) => [point.lat, point.lon]),
+        );
+        mapInstanceRef.current.fitBounds(bounds, { padding: [20, 20] });
+      }
+  }, [data, onPointClick, navigate, userLocation]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedPoint) return;
@@ -260,6 +556,46 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
           )}
         </svg>
       </button>
+
+      {/* Location loading indicator */}
+      {locationLoading && (
+        <div className="absolute top-4 left-4 bg-white rounded-xl shadow-lg border border-slate-200 p-3 z-1000">
+          <div className="flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+            <span className="text-sm text-slate-600">Getting your location...</span>
+          </div>
+        </div>
+      )}
+
+      {/* Location notification */}
+      <LocationNotification
+        userLocation={userLocation}
+        nearestLocation={nearestLocation}
+        distance={nearestLocation?.distance || 0}
+        isVisible={locationNotificationVisible}
+        onClose={() => setLocationNotificationVisible(false)}
+        onShowDetails={() => setDetailsModalVisible(true)}
+      />
+
+      {/* Quick Details Button */}
+      {nearestLocation && !locationNotificationVisible && (
+        <button
+          onClick={() => setDetailsModalVisible(true)}
+          className="absolute bottom-20 left-4 bg-blue-600 text-white rounded-xl shadow-lg border border-slate-200 p-3 z-1000 hover:bg-blue-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
+          title="View nearest location details"
+        >
+          <Info className="w-4 h-4" />
+          <span className="text-sm font-medium">Nearest Location</span>
+        </button>
+      )}
+
+      {/* Details Modal */}
+      <NearestLocationModal
+        nearestLocation={nearestLocation}
+        distance={nearestLocation?.distance || 0}
+        isVisible={detailsModalVisible}
+        onClose={() => setDetailsModalVisible(false)}
+      />
 
       <div
         className={`absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-lg border border-gray-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}
