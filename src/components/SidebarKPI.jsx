@@ -61,7 +61,7 @@ const SidebarKPI = ({ data }) => {
   ];
 
   return (
-    <div className="w-48 lg:w-56 bg-white border-r border-gray-200 p-4 h-full  hidden lg:block sticky top-0">
+    <div className="w-48 lg:w-56 bg-white border-r border-gray-200 p-4 h-full hidden lg:block">
       <h2 className="text-lg font-bold text-gray-900 mb-4">Forecast Summary</h2>
       <div className="space-y-4">
         {kpis.map((kpi, index) => (

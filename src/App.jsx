@@ -80,14 +80,14 @@ function Dashboard() {
   }
 
   return (
-    <div className="bg-gray-50 flex flex-col border border-red-500">
+    <div className="bg-gray-50 flex flex-col h-screen">
       <Header data={forecastData} lastUpdated={lastUpdated} />
 
-      <div className="flex border border-black">
+      <div className="flex flex-1 overflow-hidden">
         <SidebarKPI data={forecastData} />
         
-        <div className="flex-1 flex flex-col min-h-0">
-          <div className="bg-white border-b border-gray-200 px-4 lg:px-6">
+        <div className="flex-1 flex flex-col">
+          <div className="bg-white border-b border-gray-200 px-4 lg:px-6 shrink-0">
             <div className="flex space-x-4">
               <button
                 onClick={() => setActiveView('map')}
@@ -122,9 +122,9 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="">
+          <div className="flex-1 overflow-hidden">
             {activeView === 'map' && (
-              <div className="p-2 lg:p-1 border border-green-500">
+              <div className="h-full p-2 lg:p-1">
                 <IndiaMap 
                   data={forecastData} 
                   selectedPoint={selectedPoint}
@@ -134,13 +134,13 @@ function Dashboard() {
             )}
             
             {activeView === 'analytics' && (
-              <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+              <div className="h-full overflow-y-auto p-4 lg:p-6">
                 <AnalyticsCharts data={forecastData} />
               </div>
             )}
             
             {activeView === 'table' && (
-              <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+              <div className="h-full overflow-y-auto p-4 lg:p-6">
                 <DataTable 
                   data={forecastData} 
                   onRowClick={handleRowClick}
@@ -152,7 +152,7 @@ function Dashboard() {
         </div>
 
         {selectedPoint && (
-          <div className="w-full lg:w-96 xl:w-104 border-t lg:border-t-0 lg:border-l border-gray-200">
+          <div className="w-full lg:w-96 xl:w-104 border-t lg:border-t-0 lg:border-l border-gray-200 shrink-0">
             <DetailPanel 
               selectedPoint={selectedPoint} 
               onClose={handleCloseDetail}
