@@ -291,6 +291,8 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
   const [locationLoading, setLocationLoading] = useState(true);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
   const [tempRange, setTempRange] = useState({ min: 0, max: 0 });
+  const [selectedLeadDay, setSelectedLeadDay] = useState(1);
+  const [maxLeadDay, setMaxLeadDay] = useState(1);
 
   // Calculate distance between two coordinates (Haversine formula)
   const calculateDistance = (lat1, lon1, lat2, lon2) => {
@@ -325,9 +327,14 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
     return nearest;
   }, []);
 
-  // Get user location
+  // Get user location and find max lead day
   useEffect(() => {
     if (!data || !Array.isArray(data) || data.length === 0) return;
+    
+    // Find maximum lead day
+    const leadDays = data.map(point => point.lead).filter(lead => lead !== null && lead !== undefined);
+    const maxDay = Math.max(...leadDays);
+    setMaxLeadDay(maxDay);
     
     setLocationLoading(true);
     
@@ -373,7 +380,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
         mapInstanceRef.current.setView([20.5937, 78.9629], 5);
       }
     }
-  }, [data, findNearestLocation]);
+  }, [data, findNearestLocation, maxLeadDay]);
 
   useEffect(() => {
     if (!mapInstanceRef.current && mapRef.current) {
@@ -404,8 +411,19 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
+    // Filter data by selected lead day
+    const filteredData = data.filter(point => {
+      if (point.lead === selectedLeadDay) return true;
+      // If exact day doesn't exist, show the latest available day before selected day
+      if (point.lead < selectedLeadDay) {
+        const hasExactDay = data.some(p => p.lead === selectedLeadDay);
+        if (!hasExactDay) return true;
+      }
+      return false;
+    });
+
     // Find min and max temperatures for normalization
-    const temps = data.map(point => point.tmax_pred).filter(temp => temp !== null && temp !== undefined);
+    const temps = filteredData.map(point => point.tmax_pred).filter(temp => temp !== null && temp !== undefined);
     const minTemp = Math.min(...temps);
     const maxTemp = Math.max(...temps);
     const tempRangeValue = maxTemp - minTemp || 1; // Avoid division by zero
@@ -415,16 +433,36 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
 
     const getTemperatureColor = (temp) => {
       if (temp === null || temp === undefined) return "#94a3b8";
-      if (temp < 20) return "#3b82f6";
-      if (temp < 25) return "#10b981";
-      if (temp < 30) return "#f59e0b";
-      if (temp < 35) return "#f97316";
-      if (temp < 40) return "#ef4444";
-      return "#dc2626";
+      
+      // Normalize temperature to 0-1 range based on current day's data
+      const normalizedTemp = (temp - minTemp) / tempRangeValue;
+      
+      // Use more aggressive color transitions for better visibility
+      if (normalizedTemp < 0.2) {
+        // Deep blue to cyan (0-20%)
+        const intensity = normalizedTemp / 0.2;
+        return `rgb(${Math.round(0 + intensity * 0)}, ${Math.round(50 + intensity * 150)}, ${Math.round(200 + intensity * 55)})`;
+      } else if (normalizedTemp < 0.4) {
+        // Cyan to yellow (20-40%)
+        const intensity = (normalizedTemp - 0.2) / 0.2;
+        return `rgb(${Math.round(0 + intensity * 255)}, ${Math.round(200 + intensity * 55)}, ${Math.round(255 - intensity * 155)})`;
+      } else if (normalizedTemp < 0.6) {
+        // Yellow to orange (40-60%)
+        const intensity = (normalizedTemp - 0.4) / 0.2;
+        return `rgb(${Math.round(255)}, ${Math.round(255 - intensity * 100)}, ${Math.round(100 - intensity * 100)})`;
+      } else if (normalizedTemp < 0.8) {
+        // Orange to red (60-80%)
+        const intensity = (normalizedTemp - 0.6) / 0.2;
+        return `rgb(${Math.round(255)}, ${Math.round(155 - intensity * 155)}, ${Math.round(0)})`;
+      } else {
+        // Red to dark red (80-100%)
+        const intensity = (normalizedTemp - 0.8) / 0.2;
+        return `rgb(${Math.round(255 - intensity * 100)}, ${Math.round(0)}, ${Math.round(0)})`;
+      }
     };
 
 
-    data.forEach((point) => {
+    filteredData.forEach((point) => {
       const temp = point.tmax_pred;
       const hwProb = point.hw_prob;
 
@@ -530,7 +568,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
         );
         mapInstanceRef.current.fitBounds(bounds, { padding: [20, 20] });
       }
-  }, [data, onPointClick, navigate, userLocation]);
+  }, [data, onPointClick, navigate, userLocation, selectedLeadDay]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedPoint) return;
@@ -675,6 +713,23 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
             <div className="w-6 h-6 rounded-full bg-slate-400"></div>
             <span className="text-xs text-slate-600">Extreme (80-100%)</span>
           </div>
+        </div>
+      </div>
+
+      {/* Timeline Slider */}
+      <div className="absolute bottom-2 left-4 right-4 bg-white/95 backdrop-blur-sm border border-gray-200 rounded-lg p-2 z-1000 shadow-lg">
+        <div className="flex items-center gap-3">
+          <span className="text-xs font-medium text-gray-600 whitespace-nowrap">
+            Day {selectedLeadDay}/{maxLeadDay}
+          </span>
+          <input
+            type="range"
+            min="1"
+            max={maxLeadDay}
+            value={selectedLeadDay}
+            onChange={(e) => setSelectedLeadDay(parseInt(e.target.value))}
+            className="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+          />
         </div>
       </div>
 
