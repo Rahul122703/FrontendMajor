@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { Thermometer, MapPin, Calendar, Activity, AlertTriangle } from "lucide-react";
 
 const HoverCard = ({ point, position, isVisible }) => {
   if (!isVisible || !point) return null;
@@ -11,28 +12,38 @@ const HoverCard = ({ point, position, isVisible }) => {
 
   return (
     <div
-      className="absolute bg-white rounded-lg shadow-xl border border-gray-200 p-3 z-2000 pointer-events-none"
+      className="absolute bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-2000 pointer-events-none backdrop-blur-sm bg-opacity-95"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
         transform: "translate(-50%, -100%)",
-        minWidth: "220px",
+        minWidth: "260px",
+        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)"
       }}
     >
-      <h3 className="font-bold text-sm mb-2 text-gray-900">
-        {point.region_name || "Unknown Region"}
-      </h3>
-      <div className="space-y-1 text-xs">
-        <div className="flex justify-between">
-          <span className="text-gray-600">Temperature:</span>
-          <span className="font-semibold">
+      <div className="flex items-center gap-2 mb-3">
+        <MapPin className="w-4 h-4 text-blue-600" />
+        <h3 className="font-bold text-sm text-slate-900">
+          {point.region_name || "Unknown Region"}
+        </h3>
+      </div>
+      <div className="space-y-2">
+        <div className="flex items-center justify-between bg-slate-50 rounded-lg p-2">
+          <div className="flex items-center gap-2">
+            <Thermometer className="w-4 h-4 text-orange-600" />
+            <span className="text-xs text-slate-600 font-medium">Temperature:</span>
+          </div>
+          <span className="font-bold text-sm text-slate-900">
             {temp !== null ? Math.round(temp) + "°C" : "N/A"}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600">Heatwave Risk:</span>
+        <div className="flex items-center justify-between bg-slate-50 rounded-lg p-2">
+          <div className="flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 text-red-600" />
+            <span className="text-xs text-slate-600 font-medium">Heatwave Risk:</span>
+          </div>
           <span
-            className={`font-semibold ${
+            className={`font-bold text-sm ${
               hwProb >= 0.6
                 ? "text-red-600"
                 : hwProb >= 0.4
@@ -45,20 +56,26 @@ const HoverCard = ({ point, position, isVisible }) => {
             {hwProb !== null ? Math.round(hwProb * 100) + "%" : "N/A"}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600">Forecast Date:</span>
-          <span className="font-semibold">
+        <div className="flex items-center justify-between bg-slate-50 rounded-lg p-2">
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-blue-600" />
+            <span className="text-xs text-slate-600 font-medium">Forecast Date:</span>
+          </div>
+          <span className="font-bold text-sm text-slate-900">
             {new Date(point.forecast_date).toLocaleDateString()}
           </span>
         </div>
-        <div className="flex justify-between">
-          <span className="text-gray-600">Lead Day:</span>
-          <span className="font-semibold">{point.lead}</span>
+        <div className="flex items-center justify-between bg-slate-50 rounded-lg p-2">
+          <div className="flex items-center gap-2">
+            <Activity className="w-4 h-4 text-purple-600" />
+            <span className="text-xs text-slate-600 font-medium">Lead Day:</span>
+          </div>
+          <span className="font-bold text-sm text-slate-900">{point.lead}</span>
         </div>
         {point.hw_pred && (
-          <div className="flex justify-between">
-            <span className="text-gray-600">Heatwave Class:</span>
-            <span className="font-semibold text-red-600">{point.hw_pred}</span>
+          <div className="flex items-center justify-between bg-red-50 rounded-lg p-2">
+            <span className="text-xs text-red-600 font-medium">Heatwave Class:</span>
+            <span className="font-bold text-sm text-red-600">{point.hw_pred}</span>
           </div>
         )}
       </div>
@@ -74,6 +91,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [hoveredPoint, setHoveredPoint] = useState(null);
   const [hoverPosition, setHoverPosition] = useState({ x: 0, y: 0 });
+  const [tempRange, setTempRange] = useState({ min: 0, max: 0 });
 
   useEffect(() => {
     if (!mapInstanceRef.current && mapRef.current) {
@@ -104,14 +122,47 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
     markersRef.current.forEach((marker) => marker.remove());
     markersRef.current = [];
 
+    // Find min and max temperatures for normalization
+    const temps = data.map(point => point.tmax_pred).filter(temp => temp !== null && temp !== undefined);
+    const minTemp = Math.min(...temps);
+    const maxTemp = Math.max(...temps);
+    const tempRangeValue = maxTemp - minTemp || 1; // Avoid division by zero
+    
+    // Update state for display in UI
+    setTempRange({ min: minTemp, max: maxTemp });
+
     const getTemperatureColor = (temp) => {
       if (temp === null || temp === undefined) return "#94a3b8";
-      if (temp < 20) return "#3b82f6";
-      if (temp < 25) return "#10b981";
-      if (temp < 30) return "#f59e0b";
-      if (temp < 35) return "#f97316";
-      if (temp < 40) return "#ef4444";
-      return "#dc2626";
+      
+      // Normalize temperature to 0-1 range
+      const normalizedTemp = (temp - minTemp) / tempRangeValue;
+      
+      // Use smooth color gradient with more granular steps
+      if (normalizedTemp < 0.16) {
+        // Deep blue to blue (0-16%)
+        const intensity = normalizedTemp / 0.16;
+        return `rgb(${Math.round(59 + intensity * 0)}, ${Math.round(130 + intensity * 50)}, ${Math.round(246 - intensity * 46)})`;
+      } else if (normalizedTemp < 0.33) {
+        // Blue to green (16-33%)
+        const intensity = (normalizedTemp - 0.16) / 0.17;
+        return `rgb(${Math.round(59 + intensity * 67)}, ${Math.round(180 + intensity * 35)}, ${Math.round(200 - intensity * 150)})`;
+      } else if (normalizedTemp < 0.5) {
+        // Green to yellow (33-50%)
+        const intensity = (normalizedTemp - 0.33) / 0.17;
+        return `rgb(${Math.round(126 + intensity * 109)}, ${Math.round(215 - intensity * 35)}, ${Math.round(50 + intensity * 10)})`;
+      } else if (normalizedTemp < 0.67) {
+        // Yellow to orange (50-67%)
+        const intensity = (normalizedTemp - 0.5) / 0.17;
+        return `rgb(${Math.round(235 + intensity * 18)}, ${Math.round(180 - intensity * 35)}, ${Math.round(60 - intensity * 20)})`;
+      } else if (normalizedTemp < 0.83) {
+        // Orange to red (67-83%)
+        const intensity = (normalizedTemp - 0.67) / 0.16;
+        return `rgb(${Math.round(253 - intensity * 14)}, ${Math.round(145 - intensity * 45)}, ${Math.round(40 - intensity * 10)})`;
+      } else {
+        // Red to dark red (83-100%)
+        const intensity = (normalizedTemp - 0.83) / 0.17;
+        return `rgb(${Math.round(239 - intensity * 27)}, ${Math.round(100 - intensity * 30)}, ${Math.round(30 - intensity * 10)})`;
+      }
     };
 
     const getHeatwaveColor = (hwProb) => {
@@ -128,16 +179,15 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       const hwProb = point.hw_prob;
 
       const color = getTemperatureColor(temp);
-      const radius = 8 + hwProb * 12;
 
       const circle = L.circleMarker([point.lat, point.lon], {
-        radius: radius,
+        radius: 4 + hwProb * 6, // Smaller base radius: 4-10 instead of 8-20
         fillColor: color,
-        color: "#fff",
-        weight: 2,
-        opacity: 1,
-        fillOpacity: 0.8,
-        className: "forecast-point cursor-pointer",
+        color: "#ffffff",
+        weight: 1.5,
+        opacity: 0.9,
+        fillOpacity: 0.7,
+        className: "forecast-point cursor-pointer transition-all duration-200",
       });
 
       const popupContent = `
@@ -183,17 +233,19 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
           y: containerPoint.y,
         });
 
-        this.setStyle({
-          weight: 3,
-          fillOpacity: 1,
+        point.setStyle({
+          weight: 2.5,
+          fillOpacity: 0.9,
+          color: "#ffffff",
         });
       });
 
       circle.on("mouseout", function () {
         setHoveredPoint(null);
         this.setStyle({
-          weight: 2,
-          fillOpacity: 0.8,
+          weight: 1.5,
+          fillOpacity: 0.7,
+          color: "#ffffff",
         });
       });
 
@@ -229,12 +281,12 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
 
   return (
     <div
-      className={`relative bg-white rounded-lg border border-gray-200 overflow-hidden ${isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""}`}
+      className={`relative bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-lg ${isFullscreen ? "fixed inset-0 z-50 rounded-none" : ""}`}
     >
       <div ref={mapRef} className="w-full min-h-[calc(100vh-120px)]" />
       <button
         onClick={toggleFullscreen}
-        className="absolute top-4 right-4 bg-white p-2 rounded-lg shadow-lg border border-gray-200 z-1000 hover:bg-gray-50 transition-colors"
+        className="absolute top-4 right-4 bg-white p-2.5 rounded-xl shadow-lg border border-slate-200 z-1000 hover:bg-slate-50 transition-all duration-200 hover:shadow-xl"
         title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
       >
         <svg
@@ -262,61 +314,55 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       </button>
 
       <div
-        className={`absolute bottom-4 left-4 bg-white p-3 rounded-lg shadow-lg border border-gray-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}
+        className={`absolute bottom-4 left-4 bg-white p-4 rounded-2xl shadow-lg border border-slate-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}
       >
-        <h4 className="font-semibold text-sm mb-2">Temperature Scale</h4>
-        <div className="space-y-1">
+        <div className="flex items-center gap-2 mb-3">
+          <Thermometer className="w-4 h-4 text-orange-600" />
+          <h4 className="font-semibold text-sm text-slate-900">Temperature Scale</h4>
+        </div>
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-blue-500"></div>
-            <span className="text-xs">&lt; 20°C</span>
+            <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+            <span className="text-xs text-slate-600">Min: {Math.round(tempRange.min)}°C</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-green-500"></div>
-            <span className="text-xs">20-25°C</span>
+            <div className="w-3 h-3 rounded-full bg-linear-to-r from-blue-500 via-green-500 to-red-500"></div>
+            <span className="text-xs text-slate-600">Gradient Scale</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-amber-500"></div>
-            <span className="text-xs">25-30°C</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-orange-500"></div>
-            <span className="text-xs">30-35°C</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-red-500"></div>
-            <span className="text-xs">35-40°C</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-red-700"></div>
-            <span className="text-xs">&gt; 40°C</span>
+            <div className="w-3 h-3 rounded-full bg-red-700"></div>
+            <span className="text-xs text-slate-600">Max: {Math.round(tempRange.max)}°C</span>
           </div>
         </div>
       </div>
 
       <div
-        className={`absolute bottom-4 right-4 bg-white p-3 rounded-lg shadow-lg border border-gray-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}
+        className={`absolute bottom-4 right-4 bg-white p-4 rounded-2xl shadow-lg border border-slate-200 z-1000 ${isFullscreen ? "scale-110" : ""}`}
       >
-        <h4 className="font-semibold text-sm mb-2">Size = Heatwave Risk</h4>
-        <div className="space-y-1">
+        <div className="flex items-center gap-2 mb-3">
+          <AlertTriangle className="w-4 h-4 text-red-600" />
+          <h4 className="font-semibold text-sm text-slate-900">Heatwave Risk</h4>
+        </div>
+        <div className="space-y-2">
           <div className="flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-            <span className="text-xs">Low (0-20%)</span>
+            <div className="w-2 h-2 rounded-full bg-slate-400"></div>
+            <span className="text-xs text-slate-600">Low (0-20%)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-            <span className="text-xs">Medium (20-40%)</span>
+            <div className="w-3 h-3 rounded-full bg-slate-400"></div>
+            <span className="text-xs text-slate-600">Medium (20-40%)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-gray-400"></div>
-            <span className="text-xs">High (40-60%)</span>
+            <div className="w-4 h-4 rounded-full bg-slate-400"></div>
+            <span className="text-xs text-slate-600">High (40-60%)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-5 h-5 rounded-full bg-gray-400"></div>
-            <span className="text-xs">Very High (60-80%)</span>
+            <div className="w-5 h-5 rounded-full bg-slate-400"></div>
+            <span className="text-xs text-slate-600">Very High (60-80%)</span>
           </div>
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded-full bg-gray-400"></div>
-            <span className="text-xs">Extreme (80-100%)</span>
+            <div className="w-6 h-6 rounded-full bg-slate-400"></div>
+            <span className="text-xs text-slate-600">Extreme (80-100%)</span>
           </div>
         </div>
       </div>
