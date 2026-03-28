@@ -5,8 +5,17 @@ const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
 export class GeminiService {
   constructor() {
-    this.genAI = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
-    this.model = "gemini-2.0-flash";
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    
+    if (!apiKey) {
+      console.error("Gemini API key not found. Please set VITE_GEMINI_API_KEY in your environment variables.");
+      this.genAI = null;
+      this.model = null;
+    } else {
+      this.genAI = new GoogleGenAI({ apiKey });
+      this.model = "gemini-2.0-flash";
+    }
+    
     this.listAvailableModels();
   }
 
@@ -22,6 +31,14 @@ export class GeminiService {
   }
 
   async generateContent(prompt, context = {}) {
+    if (!this.genAI || !this.model) {
+      return {
+        success: false,
+        error: 'Gemini API is not configured. Please check your environment variables.',
+        response: 'I apologize, but the AI service is not properly configured. Please contact support.',
+      };
+    }
+
     try {
       const systemPrompt = `You are an AI assistant specializing in heatwave forecasting and weather analysis for India. You have access to real-time heatwave data including:
 
