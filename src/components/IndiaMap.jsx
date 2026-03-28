@@ -26,7 +26,7 @@ const getTemperatureColorFunction = (normalizedTemp) => {
   }
 };
 
-const LocationNotification = ({ userLocation, nearestLocation, distance, isVisible, onClose, onShowDetails }) => {
+const LocationNotification = ({ userLocation, nearestLocation, distance, isVisible, onClose, onShowDetails, mapInstanceRef }) => {
   if (!isVisible || !userLocation || !nearestLocation) return null;
 
   const [isCelsius, setIsCelsius] = useState(true);
@@ -35,8 +35,18 @@ const LocationNotification = ({ userLocation, nearestLocation, distance, isVisib
     setIsCelsius(!isCelsius);
   };
 
+  const convertToFahrenheit = (celsius) => {
+    return Math.round((celsius * 9/5) + 32);
+  };
+
+  const displayTemp = nearestLocation.tmax_pred !== null 
+    ? isCelsius 
+      ? Math.round(nearestLocation.tmax_pred) + "°C"
+      : convertToFahrenheit(nearestLocation.tmax_pred) + "°F"
+    : "N/A";
+
   return (
-    <div className="absolute top-4 left-4 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-1000 max-w-sm backdrop-blur-sm bg-opacity-95">
+    <div className="absolute top-20 left-4 bg-white rounded-2xl shadow-2xl border border-slate-200 p-4 z-1000 max-w-sm backdrop-blur-sm bg-opacity-95">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-2">
           <User className="w-5 h-5 text-blue-600" />
@@ -59,36 +69,59 @@ const LocationNotification = ({ userLocation, nearestLocation, distance, isVisib
             <span className="text-xs font-medium text-blue-900">Nearest Region</span>
           </div>
           <p className="text-sm font-bold text-slate-900">{nearestLocation.region_name || "Unknown Region"}</p>
-          <p className="text-xs text-slate-600 mt-1">Distance: {distance.toFixed(1)} km</p>
+          <p className="text-xs text-slate-600 mt-1">Distance: {distance.toFixed(1)} km away</p>
         </div>
         
         <div className="grid grid-cols-2 gap-2">
           <div className="bg-orange-50 rounded-lg p-2">
             <div className="flex items-center gap-1 mb-1">
+              <Thermometer className="w-3 h-3 text-orange-600" />
               <span className="text-xs font-medium text-orange-900">Temperature</span>
             </div>
-            <p className="text-sm font-bold text-slate-900">
-              {nearestLocation.tmax_pred !== null ? Math.round(nearestLocation.tmax_pred) + "°C" : "N/A"}
-            </p>
+            <p className="text-sm font-bold text-slate-900">{displayTemp}</p>
+            <button
+              onClick={handleTemperatureToggle}
+              className="text-xs text-orange-600 hover:text-orange-700 mt-1"
+            >
+              Switch to {isCelsius ? '°F' : '°C'}
+            </button>
           </div>
           
           <div className="bg-red-50 rounded-lg p-2">
             <div className="flex items-center gap-1 mb-1">
+              <AlertTriangle className="w-3 h-3 text-red-600" />
               <span className="text-xs font-medium text-red-900">Heatwave Risk</span>
             </div>
             <p className="text-sm font-bold text-slate-900">
               {nearestLocation.hw_prob !== null ? Math.round(nearestLocation.hw_prob * 100) + "%" : "N/A"}
             </p>
+            {nearestLocation.hw_prob !== null && nearestLocation.hw_prob > 0.4 && (
+              <span className="text-xs text-red-600 font-medium">High Risk</span>
+            )}
           </div>
         </div>
         
-        <button
-          onClick={onShowDetails}
-          className="w-full bg-slate-100 text-slate-700 rounded-lg px-3 py-2 text-sm font-medium hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
-        >
-          <Info className="w-4 h-4" />
-          View All Data
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              // Center map on nearest location
+              if (mapInstanceRef?.current) {
+                mapInstanceRef.current.setView([nearestLocation.lat, nearestLocation.lon], 9);
+              }
+            }}
+            className="flex-1 bg-blue-100 text-blue-700 rounded-lg px-3 py-2 text-xs font-medium hover:bg-blue-200 transition-colors flex items-center justify-center gap-1"
+          >
+            <MapPin className="w-3 h-3" />
+            View on Map
+          </button>
+          <button
+            onClick={onShowDetails}
+            className="flex-1 bg-slate-100 text-slate-700 rounded-lg px-3 py-2 text-xs font-medium hover:bg-slate-200 transition-colors flex items-center justify-center gap-1"
+          >
+            <Info className="w-3 h-3" />
+            Details
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -435,12 +468,16 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
           attribution: "© Esri © OpenStreetMap contributors",
         },
       ).addTo(mapInstanceRef.current);
+
+      // Make map instance globally accessible for LocationNotification
+      window.mapInstanceRef = mapInstanceRef;
     }
 
     return () => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
+        window.mapInstanceRef = null;
       }
     };
   }, []);
@@ -471,6 +508,127 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
     
     // Update state for display in UI
     setTimeout(() => setTempRange({ min: minTemp, max: maxTemp }), 0);
+
+    // Add user location marker if available
+    if (userLocation) {
+      const userIcon = L.divIcon({
+        html: `
+          <div class="user-location-marker" style="
+            background: #3b82f6;
+            border: 3px solid white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            cursor: pointer;
+            animation: pulse 2s infinite;
+          ">
+            <div style="
+              background: white;
+              border-radius: 50%;
+              width: 8px;
+              height: 8px;
+            "></div>
+          </div>
+          <style>
+            @keyframes pulse {
+              0% { transform: scale(1); opacity: 1; }
+              50% { transform: scale(1.1); opacity: 0.8; }
+              100% { transform: scale(1); opacity: 1; }
+            }
+          </style>
+        `,
+        className: "user-location-marker",
+        iconSize: [20, 20],
+        iconAnchor: [10, 10]
+      });
+      
+      const userMarker = L.marker([userLocation.lat, userLocation.lon], { icon: userIcon });
+      
+      // Create popup for user location
+      const userPopupContent = `
+        <div class="p-3 min-w-64">
+          <h3 class="font-bold text-lg mb-2 text-blue-600">Your Current Location</h3>
+          <div class="space-y-2 text-sm">
+            <div><strong>Coordinates:</strong> ${userLocation.lat.toFixed(4)}, ${userLocation.lon.toFixed(4)}</div>
+            <div><strong>Nearest Region:</strong> ${nearestLocation?.region_name || "Finding..."}</div>
+            <div><strong>Distance:</strong> ${nearestLocation ? Math.round(nearestLocation.distance) + " km" : "Calculating..."}</div>
+            ${nearestLocation ? `
+              <div class="mt-3 p-2 bg-blue-50 rounded-lg">
+                <div><strong>Nearest Temp:</strong> ${nearestLocation.tmax_pred !== null ? Math.round(nearestLocation.tmax_pred) + "°C" : "N/A"}</div>
+                <div><strong>Heatwave Risk:</strong> ${nearestLocation.hw_prob !== null ? Math.round(nearestLocation.hw_prob * 100) + "%" : "N/A"}</div>
+                <div><strong>Heatwave Class:</strong> ${nearestLocation.hw_pred || "None"}</div>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `;
+      
+      userMarker.bindPopup(userPopupContent);
+      
+      // Add click handler to show nearest location data
+      userMarker.on('click', () => {
+        if (nearestLocation) {
+          // Show loading state
+          const loadingDiv = document.createElement('div');
+          loadingDiv.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-3 rounded-lg shadow-lg z-1000';
+          loadingDiv.innerHTML = `
+            <div class="flex items-center gap-2">
+              <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <span class="text-sm text-slate-600">Finding nearest location...</span>
+            </div>
+          `;
+          mapInstanceRef.current.getContainer().appendChild(loadingDiv);
+          
+          setTimeout(() => {
+            // Center map on nearest location
+            mapInstanceRef.current.setView([nearestLocation.lat, nearestLocation.lon], 9);
+            
+            // Trigger the point click to show details
+            onPointClick && onPointClick(nearestLocation);
+            
+            // Open the nearest location's popup
+            setTimeout(() => {
+              const nearestMarker = markersRef.current.find(marker => {
+                const pos = marker.getLatLng();
+                return Math.abs(pos.lat - nearestLocation.lat) < 0.01 && 
+                       Math.abs(pos.lng - nearestLocation.lng) < 0.01;
+              });
+              if (nearestMarker) {
+                nearestMarker.openPopup();
+              }
+              // Remove loading indicator
+              if (loadingDiv.parentNode) {
+                loadingDiv.parentNode.removeChild(loadingDiv);
+              }
+            }, 1000);
+          }, 500);
+        }
+      });
+      
+      // Add hover effects
+      userMarker.on('mouseover', function() {
+        const element = this.getElement();
+        if (element) {
+          element.style.transform = 'scale(1.2)';
+          element.style.zIndex = '1000';
+        }
+      });
+
+      userMarker.on('mouseout', function() {
+        const element = this.getElement();
+        if (element) {
+          element.style.transform = 'scale(1)';
+          element.style.zIndex = '500';
+        }
+      });
+      
+      userMarker.addTo(mapInstanceRef.current);
+      markersRef.current.push(userMarker);
+    }
 
     if (showTemperatures) {
       // Show temperature labels instead of circles
@@ -591,7 +749,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
       const bounds = L.latLngBounds(filteredData.map(point => [point.lat, point.lon]));
       mapInstanceRef.current.fitBounds(bounds, { padding: [20, 20] });
     }
-  }, [data, selectedLeadDay, showTemperatures, onPointClick]);
+  }, [data, selectedLeadDay, showTemperatures, onPointClick, userLocation, nearestLocation]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedPoint) return;
@@ -679,6 +837,51 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
         </div>
       )}
 
+      {/* My Location Button */}
+      {!locationLoading && (
+        <button
+          onClick={() => {
+            if (navigator.geolocation) {
+              setLocationLoading(true);
+              navigator.geolocation.getCurrentPosition(
+                (position) => {
+                  const { latitude, longitude } = position.coords;
+                  setUserLocation({ lat: latitude, lon: longitude });
+                  
+                  // Find nearest location
+                  const nearest = findNearestLocation(latitude, longitude, data);
+                  if (nearest) {
+                    setNearestLocation(nearest);
+                    setLocationNotificationVisible(true);
+                    
+                    // Center map on user location
+                    if (mapInstanceRef.current) {
+                      mapInstanceRef.current.setView([latitude, longitude], 8);
+                    }
+                  }
+                  
+                  setLocationLoading(false);
+                },
+                (error) => {
+                  console.error('Error getting location:', error);
+                  setLocationLoading(false);
+                },
+                {
+                  enableHighAccuracy: true,
+                  timeout: 10000,
+                  maximumAge: 300000
+                }
+              );
+            }
+          }}
+          className="absolute top-4 left-38 bg-blue-600 text-white p-3 rounded-xl shadow-lg border border-slate-200 z-1000 hover:bg-blue-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
+          title="Find my current location"
+        >
+          <User className="w-4 h-4" />
+          <span className="text-sm font-medium">My Location</span>
+        </button>
+      )}
+
       {/* Location notification */}
       <LocationNotification
         userLocation={userLocation}
@@ -687,6 +890,7 @@ const IndiaMap = ({ data, selectedPoint, onPointClick }) => {
         isVisible={locationNotificationVisible}
         onClose={() => setLocationNotificationVisible(false)}
         onShowDetails={() => setDetailsModalVisible(true)}
+        mapInstanceRef={mapInstanceRef}
       />
 
       {/* Quick Details Button */}
