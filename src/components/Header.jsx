@@ -21,7 +21,7 @@ const Header = ({ data, lastUpdated }) => {
           <div className="flex items-center gap-2">
             <Thermometer className="w-6 h-6 text-red-500" />
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900">
-              India Heatwave Forecast Dashboard
+              THERMAL EPISODE OF HEATWAVE
             </h1>
           </div>
           <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getSeasonBadgeColor(currentSeason)}`}>
