@@ -80,13 +80,13 @@ function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen border border-black bg-gray-50 flex flex-col">
+    <div className="bg-gray-50 flex flex-col border border-red-500">
       <Header data={forecastData} lastUpdated={lastUpdated} />
 
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex border border-black">
         <SidebarKPI data={forecastData} />
         
-        <div className="flex-1 flex flex-col overflow-hidden min-h-0">
+        <div className="flex-1 flex flex-col min-h-0">
           <div className="bg-white border-b border-gray-200 px-4 lg:px-6">
             <div className="flex space-x-4">
               <button
@@ -122,9 +122,9 @@ function Dashboard() {
             </div>
           </div>
 
-          <div className="flex-1 overflow-hidden ">
+          <div className="">
             {activeView === 'map' && (
-              <div className="h-full p-4 lg:p-6">
+              <div className="p-2 lg:p-1 border border-green-500">
                 <IndiaMap 
                   data={forecastData} 
                   selectedPoint={selectedPoint}
@@ -134,13 +134,13 @@ function Dashboard() {
             )}
             
             {activeView === 'analytics' && (
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto p-4 lg:p-6">
                 <AnalyticsCharts data={forecastData} />
               </div>
             )}
             
             {activeView === 'table' && (
-              <div className="flex-1 overflow-y-auto">
+              <div className="flex-1 overflow-y-auto p-4 lg:p-6">
                 <DataTable 
                   data={forecastData} 
                   onRowClick={handleRowClick}
