@@ -940,12 +940,13 @@ const IndiaMap = ({
       });
     }
 
-    // Fit map to data bounds
-    if (filteredData.length > 0) {
+    // Fit map to data bounds only on initial load, not on slider change
+    if (filteredData.length > 0 && !mapInstanceRef.current._dataLoaded) {
       const bounds = L.latLngBounds(
         filteredData.map((point) => [point.lat, point.lon]),
       );
       mapInstanceRef.current.fitBounds(bounds, { padding: [20, 20] });
+      mapInstanceRef.current._dataLoaded = true;
     }
   }, [
     data,
