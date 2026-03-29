@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from "react";
+import { createPortal } from "react-dom";
 import L from "leaflet";
 import {
   MapPin,
@@ -379,7 +380,7 @@ const HoverCard = ({ point, position, isVisible }) => {
 
   return (
     <div
-      className="absolute bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 p-4 z-9999 pointer-events-none backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95"
+      className="fixed bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 p-4 z-[9999] pointer-events-auto backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95"
       style={{
         left: `${position.x}px`,
         top: `${position.y}px`,
@@ -656,10 +657,12 @@ const IndiaMap = ({
     if (filteredData.length === 0) return;
 
     // Calculate temperature range for normalization
-    const temps = filteredData.map(point => point.tmax_pred).filter(temp => temp !== null && temp !== undefined);
+    const temps = filteredData
+      .map((point) => point.tmax_pred)
+      .filter((temp) => temp !== null && temp !== undefined);
     const minTemp = Math.min(...temps);
     const maxTemp = Math.max(...temps);
-    
+
     // Update state for display in UI
     setTimeout(() => setTempRange({ min: minTemp, max: maxTemp }), 0);
 
@@ -697,11 +700,13 @@ const IndiaMap = ({
         `,
         className: "user-location-marker",
         iconSize: [20, 20],
-        iconAnchor: [10, 10]
+        iconAnchor: [10, 10],
       });
-      
-      const userMarker = L.marker([userLocation.lat, userLocation.lon], { icon: userIcon });
-      
+
+      const userMarker = L.marker([userLocation.lat, userLocation.lon], {
+        icon: userIcon,
+      });
+
       // Create popup for user location
       const userPopupContent = `
         <div class="p-3 min-w-64">
@@ -710,25 +715,30 @@ const IndiaMap = ({
             <div><strong>Coordinates:</strong> ${userLocation.lat.toFixed(4)}, ${userLocation.lon.toFixed(4)}</div>
             <div><strong>Nearest Region:</strong> ${nearestLocation?.region_name || "Finding..."}</div>
             <div><strong>Distance:</strong> ${nearestLocation ? Math.round(nearestLocation.distance) + " km" : "Calculating..."}</div>
-            ${nearestLocation ? `
+            ${
+              nearestLocation
+                ? `
               <div class="mt-3 p-2 bg-blue-50 rounded-lg">
                 <div><strong>Nearest Temp:</strong> ${nearestLocation.tmax_pred !== null ? Math.round(nearestLocation.tmax_pred) + "°C" : "N/A"}</div>
                 <div><strong>Heatwave Risk:</strong> ${nearestLocation.hw_prob !== null ? Math.round(nearestLocation.hw_prob * 100) + "%" : "N/A"}</div>
                 <div><strong>Heatwave Class:</strong> ${nearestLocation.hw_pred || "None"}</div>
               </div>
-            ` : ''}
+            `
+                : ""
+            }
           </div>
         </div>
       `;
-      
+
       userMarker.bindPopup(userPopupContent);
-      
+
       // Add click handler to show nearest location data
-      userMarker.on('click', () => {
+      userMarker.on("click", () => {
         if (nearestLocation) {
           // Show loading state
-          const loadingDiv = document.createElement('div');
-          loadingDiv.className = 'absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-3 rounded-lg shadow-lg z-1000';
+          const loadingDiv = document.createElement("div");
+          loadingDiv.className =
+            "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-3 rounded-lg shadow-lg z-1000";
           loadingDiv.innerHTML = `
             <div class="flex items-center gap-2">
               <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
@@ -736,20 +746,25 @@ const IndiaMap = ({
             </div>
           `;
           mapInstanceRef.current.getContainer().appendChild(loadingDiv);
-          
+
           setTimeout(() => {
             // Center map on nearest location
-            mapInstanceRef.current.setView([nearestLocation.lat, nearestLocation.lon], 9);
-            
+            mapInstanceRef.current.setView(
+              [nearestLocation.lat, nearestLocation.lon],
+              9,
+            );
+
             // Trigger the point click to show details
             onPointClick && onPointClick(nearestLocation);
-            
+
             // Open the nearest location's popup
             setTimeout(() => {
-              const nearestMarker = markersRef.current.find(marker => {
+              const nearestMarker = markersRef.current.find((marker) => {
                 const pos = marker.getLatLng();
-                return Math.abs(pos.lat - nearestLocation.lat) < 0.01 && 
-                       Math.abs(pos.lng - nearestLocation.lng) < 0.01;
+                return (
+                  Math.abs(pos.lat - nearestLocation.lat) < 0.01 &&
+                  Math.abs(pos.lng - nearestLocation.lng) < 0.01
+                );
               });
               if (nearestMarker) {
                 nearestMarker.openPopup();
@@ -762,24 +777,24 @@ const IndiaMap = ({
           }, 500);
         }
       });
-      
+
       // Add hover effects
-      userMarker.on('mouseover', function() {
+      userMarker.on("mouseover", function () {
         const element = this.getElement();
         if (element) {
-          element.style.transform = 'scale(1.2)';
-          element.style.zIndex = '1000';
+          element.style.transform = "scale(1.2)";
+          element.style.zIndex = "1000";
         }
       });
 
-      userMarker.on('mouseout', function() {
+      userMarker.on("mouseout", function () {
         const element = this.getElement();
         if (element) {
-          element.style.transform = 'scale(1)';
-          element.style.zIndex = '500';
+          element.style.transform = "scale(1)";
+          element.style.zIndex = "500";
         }
       });
-      
+
       userMarker.addTo(mapInstanceRef.current);
       markersRef.current.push(userMarker);
     }
@@ -788,17 +803,19 @@ const IndiaMap = ({
       // Show temperature labels instead of circles
       filteredData.forEach((point) => {
         const temp = point.tmax_pred;
-        
+
         if (temp !== null && temp !== undefined) {
           const tempIcon = L.divIcon({
             html: `<div class="text-xs font-bold text-white" style="text-shadow: 1px 1px 2px rgba(0,0,0,0.8);">${Math.round(temp)}°</div>`,
             className: "temperature-marker cursor-pointer",
             iconSize: [20, 14],
-            iconAnchor: [10, -7]
+            iconAnchor: [10, -7],
           });
-          
-          const tempMarker = L.marker([point.lat, point.lon], { icon: tempIcon });
-          
+
+          const tempMarker = L.marker([point.lat, point.lon], {
+            icon: tempIcon,
+          });
+
           // Create popup content for temperature marker
           const popupContent = `
             <div class="p-2 min-w-48">
@@ -814,24 +831,26 @@ const IndiaMap = ({
               </div>
             </div>
           `;
-          
+
           tempMarker.bindPopup(popupContent);
-          
+
           // Add hover events
-          tempMarker.on('mouseover', function(e) {
+          tempMarker.on("mouseover", function (e) {
             setHoveredPoint(point);
-            const point_xy = mapInstanceRef.current.latLngToContainerPoint(e.target.getLatLng());
+            const point_xy = mapInstanceRef.current.latLngToContainerPoint(
+              e.target.getLatLng(),
+            );
             setHoverPosition({ x: point_xy.x, y: point_xy.y });
           });
 
-          tempMarker.on('mouseout', function() {
+          tempMarker.on("mouseout", function () {
             setHoveredPoint(null);
           });
 
-          tempMarker.on('click', () => {
+          tempMarker.on("click", () => {
             onPointClick && onPointClick(point);
           });
-          
+
           tempMarker.addTo(mapInstanceRef.current);
           markersRef.current.push(tempMarker);
         }
@@ -841,19 +860,22 @@ const IndiaMap = ({
       filteredData.forEach((point) => {
         const temp = point.tmax_pred;
         const hwProb = point.hw_prob || 0;
-        
+
         // Normalize temperature for color calculation
-        const normalizedTemp = maxTemp !== minTemp ? (temp - minTemp) / (maxTemp - minTemp) : 0.5;
+        const normalizedTemp =
+          maxTemp !== minTemp ? (temp - minTemp) / (maxTemp - minTemp) : 0.5;
         const color = getTemperatureColorFunction(normalizedTemp);
 
         const circle = L.circleMarker([point.lat, point.lon], {
-          radius: 4 + hwProb * 6, // Smaller base radius: 4-10 instead of 8-20
+          radius: 4 + hwProb * 10, // Smaller base radius: 4-10 instead of 8-20
           fillColor: color,
           color: "#ffffff",
           weight: 1.5,
           opacity: 0.9,
           fillOpacity: 0.7,
-          className: "forecast-point cursor-pointer transition-all duration-200",
+          pane: "markerPane",
+          className:
+            "forecast-point cursor-pointer transition-all duration-200",
         });
 
         const popupContent = `
@@ -874,15 +896,18 @@ const IndiaMap = ({
         circle.bindPopup(popupContent);
 
         circle.on("mouseover", function (e) {
-          const point = filteredData.find(p => 
-            Math.abs(p.lat - e.target.getLatLng().lat) < 0.01 && 
-            Math.abs(p.lon - e.target.getLatLng().lon) < 0.01
+          console.log("hover working");
+
+          setHoveredPoint(point);
+
+          const point_xy = mapInstanceRef.current.latLngToContainerPoint(
+            e.target.getLatLng(),
           );
-          if (point) {
-            setHoveredPoint(point);
-            const point_xy = mapInstanceRef.current.latLngToContainerPoint(e.target.getLatLng());
-            setHoverPosition({ x: point_xy.x, y: point_xy.y });
-          }
+
+          setHoverPosition({
+            x: point_xy.x,
+            y: point_xy.y,
+          });
         });
 
         circle.on("mouseout", function () {
@@ -900,10 +925,19 @@ const IndiaMap = ({
 
     // Fit map to data bounds
     if (filteredData.length > 0) {
-      const bounds = L.latLngBounds(filteredData.map(point => [point.lat, point.lon]));
+      const bounds = L.latLngBounds(
+        filteredData.map((point) => [point.lat, point.lon]),
+      );
       mapInstanceRef.current.fitBounds(bounds, { padding: [20, 20] });
     }
-  }, [data, selectedLeadDay, showTemperatures, onPointClick, userLocation, nearestLocation]);
+  }, [
+    data,
+    selectedLeadDay,
+    showTemperatures,
+    onPointClick,
+    userLocation,
+    nearestLocation,
+  ]);
 
   useEffect(() => {
     if (!mapInstanceRef.current || !selectedPoint) return;
@@ -921,13 +955,18 @@ const IndiaMap = ({
 
   // Add coordinate navigation from AI responses
   useEffect(() => {
-    if (!mapInstanceRef.current || !onNavigateToCoordinates || !onShowLocationData) return;
-    
+    if (
+      !mapInstanceRef.current ||
+      !onNavigateToCoordinates ||
+      !onShowLocationData
+    )
+      return;
+
     // This will be called when AI provides coordinates
     window.handleAINavigation = (lat, lng) => {
       if (mapInstanceRef.current) {
         mapInstanceRef.current.setView([lat, lng], 10);
-        
+
         // Find nearest data point
         const nearest = findNearestLocation(lat, lng, data);
         if (nearest) {
@@ -936,11 +975,18 @@ const IndiaMap = ({
         }
       }
     };
-    
+
     return () => {
       window.handleAINavigation = null;
     };
-  }, [mapInstanceRef, onNavigateToCoordinates, onShowLocationData, data, onPointClick, findNearestLocation]);
+  }, [
+    mapInstanceRef,
+    onNavigateToCoordinates,
+    onShowLocationData,
+    data,
+    onPointClick,
+    findNearestLocation,
+  ]);
 
   // Update user location when parent requests
   useEffect(() => {
@@ -951,7 +997,7 @@ const IndiaMap = ({
 
   const toggleFullscreen = async () => {
     const mapElement = mapRef.current;
-    
+
     if (!document.fullscreenElement) {
       try {
         if (mapElement.requestFullscreen) {
@@ -969,7 +1015,7 @@ const IndiaMap = ({
           }
         }, 200);
       } catch (error) {
-        console.error('Error attempting to enable fullscreen:', error);
+        console.error("Error attempting to enable fullscreen:", error);
         // Fallback to CSS-only fullscreen on parent
         const mapContainer = mapElement.parentElement;
         if (mapContainer) {
@@ -998,7 +1044,7 @@ const IndiaMap = ({
           }
         }, 200);
       } catch (error) {
-        console.error('Error attempting to exit fullscreen:', error);
+        console.error("Error attempting to exit fullscreen:", error);
         // Fallback to CSS-only fullscreen
         setIsFullscreen(false);
         setTimeout(() => {
@@ -1030,26 +1076,32 @@ const IndiaMap = ({
 
     const handleKeyDown = (event) => {
       // ESC key exits fullscreen
-      if (event.key === 'Escape' && document.fullscreenElement) {
+      if (event.key === "Escape" && document.fullscreenElement) {
         toggleFullscreen();
       }
       // 'F' key toggles fullscreen when map is focused
-      if ((event.key === 'f' || event.key === 'F') && event.ctrlKey) {
+      if ((event.key === "f" || event.key === "F") && event.ctrlKey) {
         event.preventDefault();
         toggleFullscreen();
       }
     };
 
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('msfullscreenchange', handleFullscreenChange);
-    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    document.addEventListener("webkitfullscreenchange", handleFullscreenChange);
+    document.addEventListener("msfullscreenchange", handleFullscreenChange);
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+      document.removeEventListener(
+        "webkitfullscreenchange",
+        handleFullscreenChange,
+      );
+      document.removeEventListener(
+        "msfullscreenchange",
+        handleFullscreenChange,
+      );
+      document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
 
@@ -1059,18 +1111,16 @@ const IndiaMap = ({
         isFullscreen ? "fixed inset-0 z-40 rounded-none bg-black" : ""
       }`}
     >
-      <div 
-        ref={mapRef} 
+      <div
+        ref={mapRef}
         className={`w-full ${
-          isFullscreen 
-            ? "h-screen" 
-            : "min-h-[calc(100vh-120px)]"
-        }`} 
+          isFullscreen ? "h-screen" : "min-h-[calc(100vh-120px)]"
+        }`}
         style={{
-          backgroundColor: isFullscreen ? 'black' : 'transparent'
+          backgroundColor: isFullscreen ? "black" : "transparent",
         }}
       />
-      
+
       {/* Temperature Toggle Button */}
       <button
         onClick={() => setShowTemperatures(!showTemperatures)}
@@ -1109,7 +1159,9 @@ const IndiaMap = ({
       <button
         onClick={toggleFullscreen}
         className="absolute top-4 right-4 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 z-[1000] hover:bg-slate-50 dark:hover:bg-gray-700 transition-all duration-200 hover:shadow-xl"
-        title={isFullscreen ? "Exit Fullscreen (ESC)" : "Enter Fullscreen (Ctrl+F)"}
+        title={
+          isFullscreen ? "Exit Fullscreen (ESC)" : "Enter Fullscreen (Ctrl+F)"
+        }
       >
         <svg
           className="w-5 h-5"
@@ -1219,36 +1271,6 @@ const IndiaMap = ({
         </button>
       )}
 
-      {/* Hover Info */}
-      {hoveredPoint && (
-        <div
-          className="absolute bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-slate-200 dark:border-gray-700 p-3 z-1300 pointer-events-none"
-          style={{
-            left: `${hoverPosition.x}px`,
-            top: `${hoverPosition.y}px`,
-            transform: "translate(-50%, -100%)",
-          }}
-        >
-          <div className="text-sm">
-            <div className="font-semibold text-slate-900 dark:text-gray-100">
-              {hoveredPoint.region_name}
-            </div>
-            <div className="text-slate-600 dark:text-gray-300">
-              Temp:{" "}
-              {hoveredPoint.tmax_pred !== null
-                ? Math.round(hoveredPoint.tmax_pred) + "°C"
-                : "N/A"}
-            </div>
-            <div className="text-slate-600 dark:text-gray-300">
-              Risk:{" "}
-              {hoveredPoint.hw_prob !== null
-                ? Math.round(hoveredPoint.hw_prob * 100) + "%"
-                : "N/A"}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Temperature Scale - Hidden on mobile */}
       <div
         className={`hidden sm:block absolute bottom-14 left-4 bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 z-1300 ${isFullscreen ? "scale-110" : ""}`}
@@ -1342,11 +1364,14 @@ const IndiaMap = ({
         </div>
       </div>
 
-      <HoverCard
-        point={hoveredPoint}
-        position={hoverPosition}
-        isVisible={!!hoveredPoint}
-      />
+      {createPortal(
+        <HoverCard
+          point={hoveredPoint}
+          position={hoverPosition}
+          isVisible={!!hoveredPoint}
+        />,
+        document.body,
+      )}
     </div>
   );
 };
