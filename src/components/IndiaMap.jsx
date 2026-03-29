@@ -1391,6 +1391,13 @@ const IndiaMap = ({
         />,
         document.body,
       )}
+
+      <NearestLocationModal
+        nearestLocation={nearestLocation}
+        distance={nearestLocation?.distance || 0}
+        isVisible={detailsModalVisible}
+        onClose={() => setDetailsModalVisible(false)}
+      />
     </div>
   );
 };
