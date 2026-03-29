@@ -465,6 +465,7 @@ const HoverCard = ({ point, position, isVisible }) => {
   );
 };
 
+
 const IndiaMap = ({
   data,
   selectedPoint,
