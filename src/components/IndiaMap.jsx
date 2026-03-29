@@ -900,16 +900,33 @@ const IndiaMap = ({
 
           setHoveredPoint(point);
 
-          const point_xy = mapInstanceRef.current.latLngToContainerPoint(
+          const containerPoint = mapInstanceRef.current.latLngToContainerPoint(
             e.target.getLatLng(),
           );
 
+          const mapRect = mapInstanceRef.current
+            .getContainer()
+            .getBoundingClientRect();
+
           setHoverPosition({
-            x: point_xy.x,
-            y: point_xy.y,
+            x: containerPoint.x + mapRect.left,
+            y: containerPoint.y + mapRect.top,
           });
         });
+        circle.on("mousemove", function (e) {
+          const containerPoint = mapInstanceRef.current.latLngToContainerPoint(
+            e.latlng,
+          );
 
+          const mapRect = mapInstanceRef.current
+            .getContainer()
+            .getBoundingClientRect();
+
+          setHoverPosition({
+            x: containerPoint.x + mapRect.left,
+            y: containerPoint.y + mapRect.top,
+          });
+        });
         circle.on("mouseout", function () {
           setHoveredPoint(null);
         });
