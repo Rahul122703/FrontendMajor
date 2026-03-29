@@ -817,31 +817,31 @@ const IndiaMap = ({
             icon: tempIcon,
           });
 
-          // Create popup content for temperature marker
-          const popupContent = `
-            <div class="p-2 min-w-48">
-              <h3 class="font-bold text-lg mb-2">${point.region_name || "Unknown Region"}</h3>
-              <div class="space-y-1 text-sm">
-                <div><strong>Coordinates:</strong> ${point.lat.toFixed(2)}, ${point.lon.toFixed(2)}</div>
-                <div><strong>Issue Date:</strong> ${new Date(point.issue_date).toLocaleDateString()}</div>
-                <div><strong>Forecast Date:</strong> ${new Date(point.forecast_date).toLocaleDateString()}</div>
-                <div><strong>Lead Day:</strong> ${point.lead}</div>
-                <div><strong>Predicted Temp:</strong> ${Math.round(temp)}°C</div>
-                <div><strong>Heatwave Prob:</strong> ${point.hw_prob !== null ? Math.round(point.hw_prob * 100) + "%" : "N/A"}</div>
-                <div><strong>Heatwave Class:</strong> ${point.hw_pred || "None"}</div>
-              </div>
-            </div>
-          `;
-
-          tempMarker.bindPopup(popupContent);
-
-          // Add hover events
           tempMarker.on("mouseover", function (e) {
             setHoveredPoint(point);
             const point_xy = mapInstanceRef.current.latLngToContainerPoint(
               e.target.getLatLng(),
             );
-            setHoverPosition({ x: point_xy.x, y: point_xy.y });
+            const mapRect = mapInstanceRef.current
+              .getContainer()
+              .getBoundingClientRect();
+            setHoverPosition({
+              x: point_xy.x + mapRect.left,
+              y: point_xy.y + mapRect.top,
+            });
+          });
+
+          tempMarker.on("mousemove", function (e) {
+            const containerPoint = mapInstanceRef.current.latLngToContainerPoint(
+              e.latlng,
+            );
+            const mapRect = mapInstanceRef.current
+              .getContainer()
+              .getBoundingClientRect();
+            setHoverPosition({
+              x: containerPoint.x + mapRect.left,
+              y: containerPoint.y + mapRect.top,
+            });
           });
 
           tempMarker.on("mouseout", function () {
