@@ -228,15 +228,15 @@ const AIChatAssistant = ({
               isUser 
                 ? 'bg-blue-600 text-white rounded-br-sm' 
                 : message.isError
-                  ? 'bg-red-50 dark:bg-red-900/20 text-red-800 dark:text-red-200 rounded-bl-sm border border-red-200 dark:border-red-800'
+                  ? 'bg-red-50 text-red-800 rounded-bl-sm border border-red-200'
                   : message.isWelcome
-                    ? 'bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-900/20 dark:to-blue-900/20 text-slate-800 dark:text-gray-200 rounded-bl-sm border border-purple-200 dark:border-purple-800'
-                    : 'bg-slate-100 dark:bg-gray-700 text-slate-800 dark:text-gray-200 rounded-bl-sm'
+                    ? 'bg-gradient-to-r from-purple-50 to-blue-50 text-slate-800 rounded-bl-sm border border-purple-200'
+                    : 'bg-slate-100 text-slate-800 rounded-bl-sm'
             }`}>
               <p className="text-sm whitespace-pre-wrap">{message.text}</p>
               {message.coordinates && (
-                <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
-                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="flex items-center gap-2 text-blue-700">
                     <MapPin className="w-4 h-4" />
                     <span className="text-xs font-medium">
                       Navigating to: {message.coordinates[0].lat.toFixed(4)}, {message.coordinates[0].lng.toFixed(4)}
@@ -245,7 +245,7 @@ const AIChatAssistant = ({
                 </div>
               )}
             </div>
-            <div className={`text-xs text-slate-500 dark:text-gray-400 mt-1 ${isUser ? 'text-right' : 'text-left'}`}>
+            <div className={`text-xs text-slate-500 mt-1 ${isUser ? 'text-right' : 'text-left'}`}>
               {formatTime(message.timestamp)}
             </div>
           </div>
