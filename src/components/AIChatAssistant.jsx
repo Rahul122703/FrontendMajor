@@ -2,6 +2,53 @@ import { useState, useRef, useEffect } from 'react';
 import { Send, Bot, User, MapPin, AlertTriangle, Thermometer, Activity, Calendar, X, Minimize2, Maximize2 } from 'lucide-react';
 import { geminiService } from '../services/gemini';
 
+// Helper function to parse markdown and extract coordinates
+const parseMarkdownAndCoordinates = (text) => {
+  if (!text) return { html: '', coordinates: [] };
+  
+  const extractedCoords = [];
+  
+  // Extract coordinates before processing markdown
+  const coordPattern = /lat:\s*(-?\d+\.?\d*)[,\s]+lng:\s*(-?\d+\.?\d*)/gi;
+  let match;
+  while ((match = coordPattern.exec(text)) !== null) {
+    extractedCoords.push({
+      lat: parseFloat(match[1]),
+      lng: parseFloat(match[2])
+    });
+  }
+  
+  // Also look for coordinate pairs like "28.6139, 77.2090"
+  const latLngPattern = /(-?\d+\.\d+)\s*,\s*(-?\d+\.\d+)/g;
+  while ((match = latLngPattern.exec(text)) !== null) {
+    const lat = parseFloat(match[1]);
+    const lng = parseFloat(match[2]);
+    if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+      // Check if not already added
+      const exists = extractedCoords.some(c => 
+        Math.abs(c.lat - lat) < 0.0001 && Math.abs(c.lng - lng) < 0.0001
+      );
+      if (!exists) {
+        extractedCoords.push({ lat, lng });
+      }
+    }
+  }
+  
+  // Convert markdown to HTML
+  let html = text
+    // Bold: **text** or __text__
+    .replace(/\*\*(.+?)\*\*|__(.+?)__/g, '<strong>$1$2</strong>')
+    // Italic: *text* or _text_
+    .replace(/\*(.+?)\*|_(.+?)_/g, '<em>$1$2</em>')
+    // Bullet points: * at start of line or after newline
+    .replace(/(^|\n)\*\s+/g, '$1• ')
+    .replace(/(^|\n)-\s+/g, '$1• ')
+    // Convert newlines to <br>
+    .replace(/\n/g, '<br>');
+  
+  return { html, coordinates: extractedCoords };
+};
+
 const AIChatAssistant = ({ 
   data, 
   userLocation, 
@@ -205,8 +252,20 @@ const AIChatAssistant = ({
     });
   };
 
+  const handleCoordinateClick = (coords) => {
+    if (window.handleAINavigation) {
+      window.handleAINavigation(coords.lat, coords.lng);
+    }
+    onNavigateToCoordinates?.(coords.lat, coords.lng);
+    onShowLocationData?.(coords.lat, coords.lng);
+  };
+
   const renderMessage = (message) => {
     const isUser = message.type === 'user';
+    const { html, coordinates } = !isUser ? parseMarkdownAndCoordinates(message.text) : { html: message.text, coordinates: [] };
+    
+    // Use coordinates from parsed text or from message object
+    const allCoordinates = coordinates.length > 0 ? coordinates : (message.coordinates || []);
     
     return (
       <div
@@ -233,14 +292,30 @@ const AIChatAssistant = ({
                     ? 'bg-gradient-to-r from-purple-50 to-blue-50 text-slate-800 rounded-bl-sm border border-purple-200'
                     : 'bg-slate-100 text-slate-800 rounded-bl-sm'
             }`}>
-              <p className="text-sm whitespace-pre-wrap">{message.text}</p>
-              {message.coordinates && (
-                <div className="mt-2 p-2 bg-blue-50 rounded-lg border border-blue-200">
-                  <div className="flex items-center gap-2 text-blue-700">
-                    <MapPin className="w-4 h-4" />
-                    <span className="text-xs font-medium">
-                      Navigating to: {message.coordinates[0].lat.toFixed(4)}, {message.coordinates[0].lng.toFixed(4)}
-                    </span>
+              {!isUser ? (
+                <div 
+                  className="text-sm prose prose-sm max-w-none"
+                  dangerouslySetInnerHTML={{ __html: html }}
+                />
+              ) : (
+                <p className="text-sm whitespace-pre-wrap">{message.text}</p>
+              )}
+              
+              {/* Clickable Coordinates Section */}
+              {allCoordinates.length > 0 && (
+                <div className="mt-3 space-y-2">
+                  <p className="text-xs font-medium text-slate-600">Click to navigate:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {allCoordinates.map((coords, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => handleCoordinateClick(coords)}
+                        className="flex items-center gap-1 px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-xs font-medium transition-colors"
+                      >
+                        <MapPin className="w-3 h-3" />
+                        <span>lat: {coords.lat.toFixed(4)}, lng: {coords.lng.toFixed(4)}</span>
+                      </button>
+                    ))}
                   </div>
                 </div>
               )}
