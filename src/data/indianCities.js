@@ -16,6 +16,7 @@ export const indianCities = [
   { name: "Jaipur, Rajasthan", lat: 26.9124, lng: 75.7873 },
   { name: "Surat, Gujarat", lat: 21.1702, lng: 72.8311 },
   { name: "Lucknow, Uttar Pradesh", lat: 26.8467, lng: 80.9462 },
+  { name: "Maharajganj, Uttar Pradesh", lat: 27.14991, lng: 83.55960},
   { name: "Kanpur, Uttar Pradesh", lat: 26.4499, lng: 80.3319 },
   { name: "Nagpur, Maharashtra", lat: 21.1458, lng: 79.0882 },
   { name: "Patna, Bihar", lat: 25.5941, lng: 85.1376 },
