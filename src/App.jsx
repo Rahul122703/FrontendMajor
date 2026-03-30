@@ -22,6 +22,7 @@ function Dashboard() {
   const [userLocation, setUserLocation] = useState(null);
   const [isAIChatVisible, setIsAIChatVisible] = useState(false);
   const [isAIChatMinimized, setIsAIChatMinimized] = useState(false);
+  const [isAIChatMaximized, setIsAIChatMaximized] = useState(false);
 
   useEffect(() => {
     const loadData = async () => {
@@ -251,6 +252,8 @@ function Dashboard() {
         onClose={() => setIsAIChatVisible(false)}
         isMinimized={isAIChatMinimized}
         onToggleMinimize={() => setIsAIChatMinimized(!isAIChatMinimized)}
+        isMaximized={isAIChatMaximized}
+        onToggleMaximize={() => setIsAIChatMaximized(!isAIChatMaximized)}
       />
     </div>
   );

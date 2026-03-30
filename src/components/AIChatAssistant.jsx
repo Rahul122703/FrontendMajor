@@ -56,15 +56,16 @@ const AIChatAssistant = ({
   onShowLocationData,
   isVisible,
   onClose,
-  isMinimized,
-  onToggleMinimize
+  isMaximized,
+  onToggleMaximize
 }) => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
-  const messagesEndRef = useRef(null);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
   const inputRef = useRef(null);
+  const messagesEndRef = useRef(null);
 
   const preMadeQuestions = [
     {
@@ -162,10 +163,10 @@ const AIChatAssistant = ({
   }, [messages]);
 
   useEffect(() => {
-    if (isVisible && !isMinimized && inputRef.current) {
+    if (isVisible && inputRef.current) {
       inputRef.current.focus();
     }
-  }, [isVisible, isMinimized]);
+  }, [isVisible]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -235,6 +236,7 @@ const AIChatAssistant = ({
 
   const handleQuestionClick = (question) => {
     setInputValue(question.text);
+    setHasUserInteracted(true);
     setTimeout(() => handleSendMessage(question.text), 100);
   };
 
@@ -331,11 +333,15 @@ const AIChatAssistant = ({
 
   if (!isVisible) return null;
 
+  // Determine modal size based on state
+  const getModalClasses = () => {
+    if (isMaximized) return 'w-[50vw] h-[80vh]';
+    return 'w-96 h-[600px]';
+  };
+
   return (
-    <div className={`fixed bottom-4 right-4 z-[9999] ${isMinimized ? 'w-16' : 'w-96'} transition-all duration-300`}>
-      <div className={`bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 overflow-hidden ${
-        isMinimized ? 'h-16' : 'h-[600px]'
-      }`}>
+    <div className={`fixed bottom-4 right-4 z-[9999] ${getModalClasses()} transition-all duration-300`}>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 overflow-hidden h-full">
         {/* Header */}
         <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-4 text-white">
           <div className="flex items-center justify-between">
@@ -352,14 +358,16 @@ const AIChatAssistant = ({
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={onToggleMinimize}
+                onClick={onToggleMaximize}
                 className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-1 transition-colors"
+                title={isMaximized ? "Restore" : "Maximize"}
               >
-                {isMinimized ? <Maximize2 className="w-4 h-4" /> : <Minimize2 className="w-4 h-4" />}
+                {isMaximized ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
               </button>
               <button
                 onClick={onClose}
                 className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-1 transition-colors"
+                title="Close"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -367,10 +375,9 @@ const AIChatAssistant = ({
           </div>
         </div>
 
-        {!isMinimized && (
-          <>
-            {/* Messages */}
-            <div className="h-[400px] overflow-y-auto p-4 bg-slate-50 dark:bg-gray-900">
+        <>
+          {/* Messages */}
+          <div className={`${isMaximized ? 'h-[60vh]' : 'h-[400px]'} overflow-y-auto p-4 bg-slate-50 dark:bg-gray-900`}>
               {messages.map(renderMessage)}
               {isLoading && (
                 <div className="flex justify-start mb-4">
@@ -392,7 +399,7 @@ const AIChatAssistant = ({
             </div>
 
             {/* Quick Questions */}
-            {messages.length <= 2 && (
+            {!hasUserInteracted && messages.length <= 2 && (
               <div className="p-4 bg-white dark:bg-gray-800 border-t border-slate-200 dark:border-gray-700">
                 <p className="text-xs font-medium text-slate-600 dark:text-gray-400 mb-3">Quick Questions:</p>
                 <div className="space-y-2 max-h-32 overflow-y-auto">
@@ -441,7 +448,6 @@ const AIChatAssistant = ({
               </div>
             </div>
           </>
-        )}
       </div>
     </div>
   );
