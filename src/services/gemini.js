@@ -13,7 +13,7 @@ export class GeminiService {
       this.model = null;
     } else {
       this.genAI = new GoogleGenAI({ apiKey });
-      this.model = "gemini-2.0-flash";
+      this.model = "gemini-2.5-flash";
     }
     
     this.listAvailableModels();

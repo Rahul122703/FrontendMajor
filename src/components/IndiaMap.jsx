@@ -1143,7 +1143,7 @@ const IndiaMap = ({
       {/* Temperature Toggle Button */}
       <button
         onClick={() => setShowTemperatures(!showTemperatures)}
-        className="absolute top-4 left-4 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 z-1000 hover:bg-slate-50 dark:hover:bg-gray-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
+        className="absolute top-4 left-13 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 z-1000 hover:bg-slate-50 dark:hover:bg-gray-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
         title={showTemperatures ? "Show Circles" : "Show Temperatures"}
       >
         <Thermometer
