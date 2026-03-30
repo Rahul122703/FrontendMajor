@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import L from "leaflet";
-import {
-  MapPin,
+import "leaflet/dist/leaflet.css";
+import NearestLocationModal from "./NearestLocationModal";
+import LocationNotification from "./LocationNotification";
+import HoverCard from "./HoverCard";
+import CitySearchModal from "./CitySearchModal";
+import { 
+  Thermometer, 
+  AlertTriangle, 
+  Info, 
+  Play, 
+  Pause, 
   User,
-  Info,
-  X,
-  AlertTriangle,
-  Thermometer,
-  Calendar,
-  Activity,
-  Maximize2,
-  Minimize2,
-  Play,
-  Pause,
+  MapPin,
 } from "lucide-react";
 
 // Import Leaflet CSS dynamically to avoid Vite resolution issues
@@ -50,422 +50,6 @@ const getTemperatureColorFunction = (normalizedTemp) => {
   }
 };
 
-const LocationNotification = ({
-  userLocation,
-  nearestLocation,
-  distance,
-  isVisible,
-  onClose,
-  onShowDetails,
-  mapInstanceRef,
-}) => {
-  if (!isVisible || !userLocation || !nearestLocation) return null;
-
-  const [isCelsius, setIsCelsius] = useState(true);
-
-  const handleTemperatureToggle = () => {
-    setIsCelsius(!isCelsius);
-  };
-
-  const convertToFahrenheit = (celsius) => {
-    return Math.round((celsius * 9) / 5 + 32);
-  };
-
-  const displayTemp =
-    nearestLocation.tmax_pred !== null
-      ? isCelsius
-        ? Math.round(nearestLocation.tmax_pred) + "°C"
-        : convertToFahrenheit(nearestLocation.tmax_pred) + "°F"
-      : "N/A";
-
-  return (
-    <div className="absolute top-20 left-4 bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 p-4 z-1000 max-w-sm backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
-          <h3 className="font-bold text-sm text-slate-900 dark:text-gray-100">
-            Your Nearest Location
-          </h3>
-        </div>
-        <button
-          onClick={onClose}
-          className="text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors"
-        >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          </svg>
-        </button>
-      </div>
-
-      <div className="space-y-3">
-        <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-3">
-          <div className="flex items-center gap-2 mb-1">
-            <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-xs font-medium text-blue-900 dark:text-blue-100">
-              Nearest Region
-            </span>
-          </div>
-          <p className="text-sm font-bold text-slate-900 dark:text-gray-100">
-            {nearestLocation.region_name || "Unknown Region"}
-          </p>
-          <p className="text-xs text-slate-600 dark:text-gray-300 mt-1">
-            Distance: {distance.toFixed(1)} km away
-          </p>
-        </div>
-
-        <div className="grid grid-cols-2 gap-2">
-          <div className="bg-orange-50 dark:bg-orange-900/30 rounded-lg p-2">
-            <div className="flex items-center gap-1 mb-1">
-              <Thermometer className="w-3 h-3 text-orange-600 dark:text-orange-400" />
-              <span className="text-xs font-medium text-orange-900 dark:text-orange-100">
-                Temperature
-              </span>
-            </div>
-            <p className="text-sm font-bold text-slate-900 dark:text-gray-100">
-              {displayTemp}
-            </p>
-            <button
-              onClick={handleTemperatureToggle}
-              className="text-xs text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 mt-1"
-            >
-              Switch to {isCelsius ? "°F" : "°C"}
-            </button>
-          </div>
-
-          <div className="bg-red-50 dark:bg-red-900/30 rounded-lg p-2">
-            <div className="flex items-center gap-1 mb-1">
-              <AlertTriangle className="w-3 h-3 text-red-600 dark:text-red-400" />
-              <span className="text-xs font-medium text-red-900 dark:text-red-100">
-                Heatwave Risk
-              </span>
-            </div>
-            <p className="text-sm font-bold text-slate-900 dark:text-gray-100">
-              {nearestLocation.hw_prob !== null
-                ? Math.round(nearestLocation.hw_prob * 100) + "%"
-                : "N/A"}
-            </p>
-            {nearestLocation.hw_prob !== null &&
-              nearestLocation.hw_prob > 0.4 && (
-                <span className="text-xs text-red-600 dark:text-red-400 font-medium">
-                  High Risk
-                </span>
-              )}
-          </div>
-        </div>
-
-        <div className="flex gap-2">
-          <button
-            onClick={() => {
-              // Center map on nearest location
-              if (mapInstanceRef?.current) {
-                mapInstanceRef.current.setView(
-                  [nearestLocation.lat, nearestLocation.lon],
-                  9,
-                );
-              }
-            }}
-            className="flex-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg px-3 py-2 text-xs font-medium hover:bg-blue-200 dark:hover:bg-blue-800/40 transition-colors flex items-center justify-center gap-1"
-          >
-            <MapPin className="w-3 h-3" />
-            View on Map
-          </button>
-          <button
-            onClick={onShowDetails}
-            className="flex-1 bg-slate-100 dark:bg-gray-700 text-slate-700 dark:text-gray-300 rounded-lg px-3 py-2 text-xs font-medium hover:bg-slate-200 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-1"
-          >
-            <Info className="w-3 h-3" />
-            Details
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const NearestLocationModal = ({
-  nearestLocation,
-  distance,
-  isVisible,
-  onClose,
-}) => {
-  if (!isVisible || !nearestLocation) return null;
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString("en-US", {
-      weekday: "long",
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  return (
-    <div className="fixed inset-0 bg-white bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-9999 p-4">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-2xl w-full max-h-[90vh] overflow-hidden">
-        {/* Header */}
-        <div className="bg-linear-to-r from-blue-600 to-blue-700 p-6 text-white">
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-3 mb-2">
-                <MapPin className="w-6 h-6" />
-                <h2 className="text-2xl font-bold">Your Nearest Location</h2>
-              </div>
-              <p className="text-blue-100 text-lg">
-                {nearestLocation.region_name || "Unknown Region"}
-              </p>
-              <p className="text-blue-200 text-sm mt-1">
-                Distance: {distance.toFixed(1)} km away
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="text-white hover:bg-white hover:bg-opacity-20 rounded-lg p-2 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-
-        {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-          {/* Quick Stats */}
-          <div className="grid grid-cols-2 gap-4 mb-6">
-            <div className="bg-orange-50 rounded-xl p-4 border border-orange-200">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-orange-900">
-                  Temperature
-                </span>
-              </div>
-              <p className="text-2xl font-bold text-slate-900">
-                {nearestLocation.tmax_pred !== null
-                  ? Math.round(nearestLocation.tmax_pred) + "°C"
-                  : "N/A"}
-              </p>
-              <p className="text-xs text-slate-600 mt-1">Predicted Max</p>
-            </div>
-
-            <div className="bg-red-50 rounded-xl p-4 border border-red-200">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm font-medium text-red-900">
-                  Heatwave Risk
-                </span>
-              </div>
-              <p className="text-2xl font-bold text-slate-900">
-                {nearestLocation.hw_prob !== null
-                  ? Math.round(nearestLocation.hw_prob * 100) + "%"
-                  : "N/A"}
-              </p>
-              <p className="text-xs text-slate-600 mt-1">Probability</p>
-            </div>
-          </div>
-
-          {/* Basic Information */}
-          <div className="mb-4">
-            <div className="p-4 bg-white rounded-xl border border-slate-200">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-slate-600">Coordinates</p>
-                  <p className="font-semibold text-slate-900">
-                    {nearestLocation.lat?.toFixed(4)},{" "}
-                    {nearestLocation.lon?.toFixed(4)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Lead Day</p>
-                  <p className="font-semibold text-slate-900">
-                    {nearestLocation.lead || "N/A"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Heatwave Class</p>
-                  <p className="font-semibold text-slate-900">
-                    {nearestLocation.hw_pred || "None"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Distance from You</p>
-                  <p className="font-semibold text-slate-900">
-                    {distance.toFixed(1)} km
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Forecast Details */}
-          <div className="mb-4">
-            <div className="p-4 bg-white rounded-xl border border-slate-200">
-              <div className="space-y-3">
-                <div>
-                  <p className="text-sm text-slate-600">Issue Date</p>
-                  <p className="font-semibold text-slate-900">
-                    {formatDate(nearestLocation.issue_date)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Forecast Date</p>
-                  <p className="font-semibold text-slate-900">
-                    {formatDate(nearestLocation.forecast_date)}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Days Ahead</p>
-                  <p className="font-semibold text-slate-900">
-                    {Math.ceil(
-                      (new Date(nearestLocation.forecast_date) -
-                        new Date(nearestLocation.issue_date)) /
-                        (1000 * 60 * 60 * 24),
-                    )}{" "}
-                    days
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-3 mt-6">
-            <button
-              onClick={() =>
-                window.open(
-                  `/forecast/${nearestLocation.lat}/${nearestLocation.lon}`,
-                  "_blank",
-                )
-              }
-              className="flex-1 bg-blue-600 text-white rounded-xl px-4 py-3 font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-            >
-              View 7-Day Forecast
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M9 5l7 7-7 7"
-                />
-              </svg>
-            </button>
-            <button
-              onClick={onClose}
-              className="px-4 py-3 bg-slate-200 text-slate-700 rounded-xl font-medium hover:bg-slate-300 transition-colors"
-            >
-              Close
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const HoverCard = ({ point, position, isVisible }) => {
-  if (!isVisible || !point) return null;
-
-  const temp = point.tmax_pred;
-  const hwProb = point.hw_prob;
-
-  return (
-    <div
-      className="fixed bg-white dark:bg-gray-800 rounded-2xl shadow-2xl border border-slate-200 dark:border-gray-700 p-4 z-[9999] pointer-events-auto backdrop-blur-sm bg-opacity-95 dark:bg-opacity-95"
-      style={{
-        left: `${position.x}px`,
-        top: `${position.y}px`,
-        transform: "translate(-50%, -100%)",
-        minWidth: "260px",
-        boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.25)",
-      }}
-    >
-      <div className="flex items-center gap-2 mb-3">
-        <MapPin className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-        <h3 className="font-bold text-sm text-slate-900 dark:text-gray-100">
-          {point.region_name || "Unknown Region"}
-        </h3>
-      </div>
-      <div className="space-y-2">
-        <div className="flex items-center justify-between bg-slate-50 dark:bg-gray-700 rounded-lg p-2">
-          <div className="flex items-center gap-2">
-            <Thermometer className="w-4 h-4 text-orange-600 dark:text-orange-400" />
-            <span className="text-xs text-slate-600 dark:text-gray-300 font-medium">
-              Temperature:
-            </span>
-          </div>
-          <span className="font-bold text-sm text-slate-900 dark:text-gray-100">
-            {temp !== null ? Math.round(temp) + "°C" : "N/A"}
-          </span>
-        </div>
-        <div className="flex items-center justify-between bg-slate-50 dark:bg-gray-700 rounded-lg p-2">
-          <div className="flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-red-600 dark:text-red-400" />
-            <span className="text-xs text-slate-600 dark:text-gray-300 font-medium">
-              Heatwave Risk:
-            </span>
-          </div>
-          <span
-            className={`font-bold text-sm ${
-              hwProb >= 0.6
-                ? "text-red-600 dark:text-red-400"
-                : hwProb >= 0.4
-                  ? "text-orange-500 dark:text-orange-400"
-                  : hwProb >= 0.2
-                    ? "text-yellow-500 dark:text-yellow-400"
-                    : "text-green-500 dark:text-green-400"
-            }`}
-          >
-            {hwProb !== null ? Math.round(hwProb * 100) + "%" : "N/A"}
-          </span>
-        </div>
-        <div className="flex items-center justify-between bg-slate-50 dark:bg-gray-700 rounded-lg p-2">
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-blue-600 dark:text-blue-400" />
-            <span className="text-xs text-slate-600 dark:text-gray-300 font-medium">
-              Forecast Date:
-            </span>
-          </div>
-          <span className="font-bold text-sm text-slate-900 dark:text-gray-100">
-            {new Date(point.forecast_date).toLocaleDateString()}
-          </span>
-        </div>
-        <div className="flex items-center justify-between bg-slate-50 dark:bg-gray-700 rounded-lg p-2">
-          <div className="flex items-center gap-2">
-            <Activity className="w-4 h-4 text-purple-600 dark:text-purple-400" />
-            <span className="text-xs text-slate-600 dark:text-gray-300 font-medium">
-              Lead Day:
-            </span>
-          </div>
-          <span className="font-bold text-sm text-slate-900 dark:text-gray-100">
-            {point.lead}
-          </span>
-        </div>
-        {point.hw_pred && (
-          <div className="flex items-center justify-between bg-red-50 dark:bg-red-900/20 rounded-lg p-2">
-            <span className="text-xs text-red-600 dark:text-red-400 font-medium">
-              Heatwave Class:
-            </span>
-            <span className="font-bold text-sm text-red-600 dark:text-red-400">
-              {point.hw_pred}
-            </span>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-
 const IndiaMap = ({
   data,
   selectedPoint,
@@ -491,6 +75,7 @@ const IndiaMap = ({
     importLeafletCSS();
   }, []);
   const [detailsModalVisible, setDetailsModalVisible] = useState(false);
+  const [citySearchModalVisible, setCitySearchModalVisible] = useState(false);
   const [tempRange, setTempRange] = useState({ min: 0, max: 0 });
   const [selectedLeadDay, setSelectedLeadDay] = useState(1);
   const [maxLeadDay, setMaxLeadDay] = useState(1);
@@ -615,7 +200,7 @@ const IndiaMap = ({
       L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
         {
-          attribution: "© Esri © OpenStreetMap contributors",
+          attribution: " Esri  OpenStreetMap contributors",
         },
       ).addTo(mapInstanceRef.current);
 
@@ -1143,7 +728,7 @@ const IndiaMap = ({
       {/* Temperature Toggle Button */}
       <button
         onClick={() => setShowTemperatures(!showTemperatures)}
-        className="absolute top-4 left-13 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 z-1000 hover:bg-slate-50 dark:hover:bg-gray-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
+        className="absolute top-4 left-15 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 z-1000 hover:bg-slate-50 dark:hover:bg-gray-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
         title={showTemperatures ? "Show Circles" : "Show Temperatures"}
       >
         <Thermometer
@@ -1151,6 +736,18 @@ const IndiaMap = ({
         />
         <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
           {showTemperatures ? "Temp" : "Circles"}
+        </span>
+      </button>
+
+      {/* City Search Button */}
+      <button
+        onClick={() => setCitySearchModalVisible(true)}
+        className="absolute top-20 left-1 bg-white dark:bg-gray-800 p-2.5 rounded-xl shadow-lg border border-slate-200 dark:border-gray-700 z-1000 hover:bg-slate-50 dark:hover:bg-gray-700 transition-all duration-200 hover:shadow-xl flex items-center gap-2"
+        title="Search Indian Cities"
+      >
+        <MapPin className="w-4 h-4 text-green-600 dark:text-green-400" />
+        <span className="text-xs font-medium text-gray-900 dark:text-gray-100">
+          Search City
         </span>
       </button>
 
@@ -1200,7 +797,7 @@ const IndiaMap = ({
               strokeLinecap="round"
               strokeLinejoin="round"
               strokeWidth={2}
-              d="M4 8V4m0 0h4M4 4l5.5 5.5M20 8v4m0-4h-4m4 0l-5.5-5.5M4 16v4m0 0h4m-4 0l5.5 5.5M20 16v4m0 0h-4m4 0l-5.5-5.5"
+              d="M4 8V4m0 0h4M4 4l5.5 5.5M20 8v4m0-4h-4m4 0l-5.5 5.5M4 16v4m0 0h4m-4 0l5.5-5.5M20 16v4m0-4h-4m4 0l-5.5-5.5"
             />
           )}
         </svg>
@@ -1397,6 +994,17 @@ const IndiaMap = ({
         distance={nearestLocation?.distance || 0}
         isVisible={detailsModalVisible}
         onClose={() => setDetailsModalVisible(false)}
+      />
+
+      {/* City Search Modal - appears over the map */}
+      <CitySearchModal
+        isOpen={citySearchModalVisible}
+        onClose={() => setCitySearchModalVisible(false)}
+        data={data}
+        mapInstanceRef={mapInstanceRef}
+        onPointClick={onPointClick}
+        setNearestLocation={setNearestLocation}
+        setLocationNotificationVisible={setLocationNotificationVisible}
       />
     </div>
   );
