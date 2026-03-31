@@ -15,8 +15,8 @@ const DataTable = ({ data, onRowClick, selectedPoint }) => {
       filtered = filtered.filter(item =>
         (item.region_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
         (item.region_id || '').toString().toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.hw_pred || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (item.tmax_pred && item.tmax_pred.toString().includes(searchTerm))
+        (item.hw_pred !== undefined && item.hw_pred !== null && item.hw_pred.toString().includes(searchTerm)) ||
+        (item.tmax_pred !== undefined && item.tmax_pred !== null && item.tmax_pred.toString().includes(searchTerm))
       );
     }
 
