@@ -1,5 +1,6 @@
+import { useState } from 'react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, Area, AreaChart } from 'recharts';
-import { TrendingUp, TrendingDown, Activity, Thermometer, AlertTriangle, BarChart3, PieChartIcon, MapPin } from 'lucide-react';
+import { TrendingUp, TrendingDown, Activity, Thermometer, AlertTriangle, BarChart3, PieChartIcon, MapPin, MapPinned, LayoutGrid } from 'lucide-react';
 
 // Move tooltip components outside of render
 const CustomTooltip = ({ active, payload, label }) => {
@@ -42,6 +43,8 @@ const PieTooltip = ({ active, payload, dataLength }) => {
 };
 
 const AnalyticsCharts = ({ data }) => {
+  const [activeTab, setActiveTab] = useState('regions');
+
   if (!data || !Array.isArray(data) || data.length === 0) {
     return (
       <div className="min-h-screen bg-linear-to-br from-slate-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 p-6">
@@ -63,6 +66,7 @@ const AnalyticsCharts = ({ data }) => {
     );
   }
 
+  // Process REGION data
   const regionData = data.reduce((acc, item) => {
     const region = item.region_name || 'Unknown';
     if (!acc[region]) {
@@ -84,6 +88,39 @@ const AnalyticsCharts = ({ data }) => {
   }, {});
 
   const regionChartData = Object.values(regionData)
+    .map(item => ({
+      ...item,
+      avgTemp: Math.round(item.avgTemp / item.count),
+      avgHeatwaveProb: Math.round((item.avgHeatwaveProb / item.count) * 100)
+    }))
+    .sort((a, b) => b.avgTemp - a.avgTemp)
+    .slice(0, 10);
+
+  // Process COORDINATE data
+  const coordinateData = data.reduce((acc, item) => {
+    const coordKey = `${item.lat.toFixed(2)},${item.lon.toFixed(2)}`;
+    if (!acc[coordKey]) {
+      acc[coordKey] = {
+        coordinate: coordKey,
+        lat: item.lat,
+        lon: item.lon,
+        region: item.region_name || 'Unknown',
+        count: 0,
+        avgTemp: 0,
+        avgHeatwaveProb: 0,
+        heatwaveCount: 0
+      };
+    }
+    acc[coordKey].count++;
+    acc[coordKey].avgTemp += item.tmax_pred || 0;
+    acc[coordKey].avgHeatwaveProb += item.hw_prob || 0;
+    if (item.hw_pred && item.hw_pred !== 'None') {
+      acc[coordKey].heatwaveCount++;
+    }
+    return acc;
+  }, {});
+
+  const coordinateChartData = Object.values(coordinateData)
     .map(item => ({
       ...item,
       avgTemp: Math.round(item.avgTemp / item.count),
@@ -188,24 +225,55 @@ const AnalyticsCharts = ({ data }) => {
           </div>
         </div> */}
 
+        {/* Tabs Navigation */}
+        <div className="flex gap-2 mb-6">
+          <button
+            onClick={() => setActiveTab('regions')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+              activeTab === 'regions'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-white dark:bg-gray-800 text-slate-600 dark:text-gray-300 border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            <LayoutGrid className="w-4 h-4" />
+            <span>By Regions</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('coordinates')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-medium transition-all duration-200 ${
+              activeTab === 'coordinates'
+                ? 'bg-blue-600 text-white shadow-lg'
+                : 'bg-white dark:bg-gray-800 text-slate-600 dark:text-gray-300 border border-slate-200 dark:border-gray-700 hover:bg-slate-50 dark:hover:bg-gray-700'
+            }`}
+          >
+            <MapPinned className="w-4 h-4" />
+            <span>By Coordinates</span>
+          </button>
+        </div>
+
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-          {/* Temperature by Region Chart */}
+          {/* Temperature Chart */}
           <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
               <div>
                 <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-gray-100 flex items-center gap-2">
                   <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-orange-600 dark:text-orange-400" />
-                  <span className="truncate">Top 10 Regions by Temperature</span>
+                  <span className="truncate">Top 10 {activeTab === 'regions' ? 'Regions' : 'Coordinates'} by Temperature</span>
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-1 hidden sm:block">Highest average temperatures across regions</p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-1 hidden sm:block">
+                  Highest average temperatures across {activeTab === 'regions' ? 'regions' : 'coordinates'}
+                </p>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={regionChartData} margin={{ top: 10, right: 10, left: 10, bottom: 60 }}>
+              <BarChart 
+                data={activeTab === 'regions' ? regionChartData : coordinateChartData} 
+                margin={{ top: 10, right: 10, left: 10, bottom: 60 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
                 <XAxis 
-                  dataKey="region" 
+                  dataKey={activeTab === 'regions' ? "region" : "coordinate"} 
                   angle={-45}
                   textAnchor="end"
                   height={60}
@@ -227,7 +295,9 @@ const AnalyticsCharts = ({ data }) => {
                   <PieChartIcon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400" />
                   <span className="truncate">Temperature Distribution</span>
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-1 hidden sm:block">Breakdown of temperature ranges across all regions</p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-1 hidden sm:block">
+                  Breakdown of temperature ranges across all {activeTab === 'regions' ? 'regions' : 'coordinates'}
+                </p>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={250}>
@@ -264,7 +334,9 @@ const AnalyticsCharts = ({ data }) => {
                   <AlertTriangle className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400" />
                   <span className="truncate">Heatwave Risk Distribution</span>
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-1 hidden sm:block">Risk levels across all monitored regions</p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-1 hidden sm:block">
+                  Risk levels across all monitored {activeTab === 'regions' ? 'regions' : 'coordinates'}
+                </p>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={250}>
@@ -293,22 +365,30 @@ const AnalyticsCharts = ({ data }) => {
             </ResponsiveContainer>
           </div>
 
-          {/* Heatwave Risk by Region */}
+          {/* Heatwave Risk Chart */}
           <div className="bg-white dark:bg-gray-800 rounded-xl sm:rounded-2xl shadow-lg border border-slate-200 dark:border-gray-700 p-4 sm:p-6 hover:shadow-xl transition-shadow duration-300">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-6 gap-3">
               <div>
                 <h3 className="text-lg sm:text-xl font-bold text-slate-900 dark:text-gray-100 flex items-center gap-2">
                   <TrendingDown className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-400" />
-                  <span className="truncate">Top 10 Regions by Heatwave Risk</span>
+                  <span className="truncate">Top 10 {activeTab === 'regions' ? 'Regions' : 'Coordinates'} by Heatwave Risk</span>
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-1 hidden sm:block">Regions with highest heatwave probability</p>
+                <p className="text-xs sm:text-sm text-slate-600 dark:text-gray-300 mt-1 hidden sm:block">
+                  {activeTab === 'regions' ? 'Regions' : 'Coordinates'} with highest heatwave probability
+                </p>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={250}>
-              <BarChart data={regionChartData.sort((a, b) => b.avgHeatwaveProb - a.avgHeatwaveProb).slice(0, 10)} margin={{ top: 10, right: 10, left: 10, bottom: 60 }}>
+              <BarChart 
+                data={activeTab === 'regions' 
+                  ? regionChartData.sort((a, b) => b.avgHeatwaveProb - a.avgHeatwaveProb).slice(0, 10)
+                  : coordinateChartData.sort((a, b) => b.avgHeatwaveProb - a.avgHeatwaveProb).slice(0, 10)
+                } 
+                margin={{ top: 10, right: 10, left: 10, bottom: 60 }}
+              >
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" strokeOpacity={0.5} />
                 <XAxis 
-                  dataKey="region" 
+                  dataKey={activeTab === 'regions' ? "region" : "coordinate"} 
                   angle={-45}
                   textAnchor="end"
                   height={60}
@@ -323,9 +403,40 @@ const AnalyticsCharts = ({ data }) => {
           </div>
         </div>
 
+        {/* Summary Stats */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mt-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-slate-200 dark:border-gray-700">
+            <p className="text-xs text-slate-500 dark:text-gray-400">Total {activeTab === 'regions' ? 'Regions' : 'Coordinates'}</p>
+            <p className="text-xl font-bold text-slate-900 dark:text-gray-100">
+              {activeTab === 'regions' ? Object.keys(regionData).length : Object.keys(coordinateData).length}
+            </p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-slate-200 dark:border-gray-700">
+            <p className="text-xs text-slate-500 dark:text-gray-400">Avg Temperature</p>
+            <p className="text-xl font-bold text-slate-900 dark:text-gray-100">{avgTempOverall}°C</p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-slate-200 dark:border-gray-700">
+            <p className="text-xs text-slate-500 dark:text-gray-400">High Risk Areas</p>
+            <p className="text-xl font-bold text-slate-900 dark:text-gray-100">
+              {activeTab === 'regions' 
+                ? Object.values(regionData).filter(r => r.avgHeatwaveProb > 40).length
+                : Object.values(coordinateData).filter(r => r.avgHeatwaveProb > 40).length
+              }
+            </p>
+          </div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-4 border border-slate-200 dark:border-gray-700">
+            <p className="text-xs text-slate-500 dark:text-gray-400">Data Points</p>
+            <p className="text-xl font-bold text-slate-900 dark:text-gray-100">{data.length}</p>
+          </div>
+        </div>
+
         {/* Footer */}
         <div className="mt-6 sm:mt-8 text-center text-xs sm:text-sm text-slate-600 dark:text-gray-300 px-2">
-          <p className="break-words">Last updated: {new Date().toLocaleString()} | Data points: {data.length} regions</p>
+          <p className="break-words">
+            Last updated: {new Date().toLocaleString()} | 
+            Data points: {data.length} | 
+            Viewing: {activeTab === 'regions' ? `${Object.keys(regionData).length} regions` : `${Object.keys(coordinateData).length} coordinates`}
+          </p>
         </div>
       </div>
     </div>
