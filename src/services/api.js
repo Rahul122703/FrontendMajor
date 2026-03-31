@@ -26,21 +26,7 @@ export const fetchForecastData = async () => {
 
 export const getSeason = (date) => {
   const inputDate = new Date(date);
-  // Subtract 2 months from the input date
-  const adjustedDate = new Date(inputDate);
-  const adjustedMonth = adjustedDate.getMonth() - 2;
-  
-  // Handle month wrap-around (e.g., January - 2 = November of previous year)
-  if (adjustedMonth < 0) {
-    adjustedDate.setMonth(adjustedMonth + 12);
-    adjustedDate.setFullYear(adjustedDate.getFullYear() - 1);
-  } else {
-    adjustedDate.setMonth(adjustedMonth);
-  }
-  
-  const month = adjustedDate.getMonth() + 1;
-  console.log("Original month:", inputDate.getMonth() + 1);
-  console.log("Adjusted month (2 months back):", month);
+  const month = inputDate.getMonth() + 1;
   
   if ([12, 1, 2].includes(month)) return "Winter";
   if ([3, 4, 5].includes(month)) return "Pre-monsoon";
