@@ -543,10 +543,43 @@ const IndiaMap = ({
     nearestLocation,
   ]);
 
+  // Add selected point marker effect
   useEffect(() => {
-    if (!mapInstanceRef.current || !selectedPoint) return;
+    if (!mapInstanceRef.current) return;
 
-    mapInstanceRef.current.setView([selectedPoint.lat, selectedPoint.lon], 7);
+    // Remove previous selected marker if exists
+    if (mapInstanceRef.current._selectedMarker) {
+      mapInstanceRef.current._selectedMarker.remove();
+      mapInstanceRef.current._selectedMarker = null;
+    }
+
+    // Add new selected marker if selectedPoint exists
+    if (selectedPoint) {
+      const selectedMarker = L.circleMarker([selectedPoint.lat, selectedPoint.lon], {
+        radius: 16,
+        fillColor: '#3b82f6',
+        color: '#ffffff',
+        weight: 3,
+        opacity: 1,
+        fillOpacity: 0.6,
+        className: 'selected-point-marker',
+      }).addTo(mapInstanceRef.current);
+
+      // Add pulsing effect with CSS
+      const markerElement = selectedMarker.getElement();
+      if (markerElement) {
+        markerElement.style.animation = 'pulse-ring 1.5s ease-out infinite';
+      }
+
+      mapInstanceRef.current._selectedMarker = selectedMarker;
+    }
+
+    return () => {
+      if (mapInstanceRef.current?._selectedMarker) {
+        mapInstanceRef.current._selectedMarker.remove();
+        mapInstanceRef.current._selectedMarker = null;
+      }
+    };
   }, [selectedPoint]);
 
   useEffect(() => {
